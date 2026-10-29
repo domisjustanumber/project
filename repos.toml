@@ -6,7 +6,7 @@ core = "freemocap"
 name = "freemocap"
 path = "repos/freemocap"
 url = "https://github.com/freemocap/freemocap"
-branch = "development-streaming"
+branch = "sfn26"
 
 [[repos]]
 name = "skellycam"

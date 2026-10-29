@@ -43,8 +43,8 @@ Follow uv's PATH instructions if `poe` is not found. Poe resolves `python` or
 `python3`; that interpreter must be Python 3.11+. Alternatively use
 `python3 scripts/workspace.py <command>` (Windows: `py -3.12` if appropriate).
 
-Setup clones core first and reads its Git sources to clone dependencies on the
-declared branches. Existing checkouts are preserved. Align installs Python
+Setup clones core first and reads its Git sources or workspace clone metadata
+to clone dependencies on the declared branches. Existing checkouts are preserved. Align installs Python
 dependencies; frontend npm installs and nested projects remain separate.
 This reproduces the layout and workflow, not an exact historical snapshot:
 branch tips move and align intentionally re-resolves Python dependencies.
@@ -75,6 +75,9 @@ Run from the workspace root or use `poe -C /path/to/project <command>`.
 | Command | Behavior |
 | --- | --- |
 | `poe setup` | Clone missing repositories; preserve existing ones |
+| `poe setup --core-branch BRANCH` | Override the initial core clone branch |
+| `poe switch BRANCH --dry-run` | Preview core and dependency branch selection from local refs |
+| `poe switch BRANCH` | Select core and the dependency branches declared in that core branch |
 | `poe organize` | Move legacy top-level checkouts under repos/ |
 | `poe status` | Show branches, local changes, cached upstream counts, core lock SHAs |
 | `poe status --json` | Structured status with full SHAs |
@@ -100,9 +103,60 @@ align accept optional repository names; normal use needs none. Dry-run and
 status use local information and cannot predict newly published remote changes.
 Core lock equality does not verify installed packages.
 
+## Select a core branch
+
+The manifest's core branch is a default for new clones, not a restriction on
+existing checkouts. `poe setup --core-branch BRANCH` overrides that default for
+a missing core checkout; it preserves an existing checkout.
+
+After committing pending work, run these commands yourself:
+
+```sh
+poe fetch
+poe switch sfn26 --dry-run
+poe switch sfn26
+poe status
+```
+
+Switch reads `pyproject.toml` from the selected core branch's committed tree.
+For editable path sources it reads Git URLs and branch targets from that file's
+`[tool.freemocap.workspace.sources]` table and checks the paths against the manifest.
+It selects each managed dependency's declared branch, which can differ from
+the core branch name. Unpinned dependencies and repositories outside core's
+sources stay unchanged. A local branch takes precedence over a cached origin
+branch; switch creates a tracking branch only when no local branch exists.
+
+Switch preflights every selected checkout before changing any branch. Pending
+tracked or untracked files, active Git operations, missing branches, and target
+branches occupied by other worktrees block the operation. Ignored files are
+protected by Git's `--no-overwrite-ignore`. A later filesystem conflict can
+still stop execution; completed switches remain and are reported.
+
+Switch does not fetch, advance branch tips, rewrite declarations, or refresh
+environments. Dry runs use local refs only. After reviewing status, use
+`poe pull` to fast-forward branches, then `poe align --dry-run` and `poe align`
+to follow any updated core declarations and rebuild Python environments.
+Pull can report dependency mismatches if updating core changes its declarations;
+align handles those switches. See the environment refresh behavior below.
+
+The `sfn26` branches are published. See [SFN setup](sfn26-HANDOFF.md).
+
 ## Alignment and environments
 
-`repos/freemocap/pyproject.toml` owns dependency Git URLs and branch declarations.
+`repos/freemocap/pyproject.toml` owns dependency sources and branch declarations.
+On `sfn26`, UV sources use sibling paths with `editable = true`, such as
+`skellycam = { path = "../skellycam", editable = true }`. Utilities use
+`../utils/skellylogs` and `../utils/skellypings`. Editing those checkouts affects
+the installed development environment without publishing dependency commits.
+Each repository still owns its own environment and lockfile.
+
+The same core file's `[tool.freemocap.workspace.sources]` table owns clone URLs
+and branch targets for editable dependencies. Older branches with Git UV sources
+continue to work without that table. A standalone clone using these development
+sources needs the sibling workspace layout; published package requirements are
+unchanged. `skelly_synchronize` remains a Git source because it is not in the
+managed checkout inventory.
+
 The manifest owns directory paths, core's initial branch, and SkellyDocs' source.
 Align leaves core's branch and SkellyDocs alone. It fetches dependencies, selects
 declared branches, and pulls with fast-forward only. Unpinned dependencies keep

@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 def git(path: Path, *args: str) -> str:
     result = subprocess.run(
         ["git", "-C", str(path), *args], text=True, capture_output=True,
-        env={**os.environ, "GIT_TERMINAL_PROMPT": "0"},
+        env={**os.environ, "GIT_TERMINAL_PROMPT": "0", "GIT_OPTIONAL_LOCKS": "0"},
     )
     if result.returncode:
         raise ValueError(result.stderr.strip() or result.stdout.strip())
@@ -62,13 +62,19 @@ class Workspace:
     def path(self, repo: dict) -> Path:
         return self.root / repo["path"]
 
-    def target(self, repo: dict) -> dict:
+    def target(self, repo: dict, project: dict | None = None) -> dict:
         if "source" not in repo:
             return {"git": repo["url"], "branch": repo.get("branch")}
-        project = read_toml(self.path(self.core) / "pyproject.toml")
+        if project is None:
+            project = read_toml(self.path(self.core) / "pyproject.toml")
         source = project["tool"]["uv"]["sources"][repo["source"]]
+        if isinstance(source, dict) and "path" in source:
+            source_path = (self.path(self.core) / source["path"]).resolve()
+            if source_path != self.path(repo).resolve() or source.get("editable") is not True:
+                raise ValueError(f"{repo['name']}: editable source must match its manifest checkout path")
+            source = project.get("tool", {}).get("freemocap", {}).get("workspace", {}).get("sources", {}).get(repo["source"])
         if not isinstance(source, dict) or "git" not in source:
-            raise ValueError(f"{repo['name']}: expected a Git source in core pyproject.toml")
+            raise ValueError(f"{repo['name']}: expected a Git source or clone metadata in core pyproject.toml")
         if "rev" in source or "tag" in source:
             raise ValueError(f"{repo['name']}: revision/tag source requires explicit handling")
         return source
@@ -83,7 +89,7 @@ class Workspace:
         if normalized_url(origin) != normalized_url(target["git"]):
             raise ValueError("Origin does not match configured source; inspect git remote -v")
 
-    def setup(self, dry_run: bool = False) -> int:
+    def setup(self, dry_run: bool = False, core_branch: str | None = None) -> int:
         failures = 0
         for repo in self.repos:
             name, path = repo["name"], self.path(repo)
@@ -97,6 +103,9 @@ class Workspace:
                     print(f"PLAN {name}: resolve source after cloning core")
                     continue
                 target = self.target(repo)
+                if repo == self.core and core_branch:
+                    git(self.root, "check-ref-format", "--branch", core_branch)
+                    target = {**target, "branch": core_branch}
                 if path.exists():
                     self.verify(repo, target)
                     print(f"KEEP {name}: existing checkout unchanged")
@@ -154,7 +163,9 @@ class Workspace:
                 row["changes"] = changes.split("\0") if changes else []
                 if row["dirty"]:
                     row["issues"].append("uncommitted files")
-                if target.get("branch") and row["branch"] != target["branch"]:
+                if repo == self.core and row["branch"] != "DETACHED":
+                    row["expected"] = row["branch"]  # Manifest is only a clone default.
+                elif target.get("branch") and row["branch"] != target["branch"]:
                     row["issues"].append("branch mismatch")
                 elif row["branch"] == "DETACHED":
                     row["issues"].append("detached HEAD")
@@ -177,6 +188,71 @@ class Workspace:
             # Strip the final separator emitted by porcelain -z.
             row["changes"] = [entry for entry in row.get("changes", []) if entry]
         return rows
+
+    def switch(self, branch: str, dry_run: bool = False) -> int:
+        """Select core and its declared dependency branches using local refs only."""
+        plans = []
+
+        def plan(repo: dict, target: dict) -> str:
+            path = self.path(repo)
+            self.verify(repo, target)
+            selected = target["branch"]
+            git(path, "check-ref-format", "--branch", selected)
+            for marker in ("MERGE_HEAD", "CHERRY_PICK_HEAD", "REVERT_HEAD", "rebase-merge",
+                           "rebase-apply", "sequencer", "BISECT_START"):
+                marker_path = Path(git(path, "rev-parse", "--git-path", marker))
+                if not marker_path.is_absolute():
+                    marker_path = path / marker_path
+                if marker_path.exists():
+                    raise ValueError(f"{repo['name']}: Git operation in progress ({marker})")
+            if git(path, "status", "--porcelain=v1", "--untracked-files=all"):
+                raise ValueError(f"{repo['name']}: uncommitted files; commit them before switching")
+            current = git(path, "branch", "--show-current")
+            ref = f"refs/heads/{selected}"
+            create = False
+            try:
+                git(path, "show-ref", "--verify", ref)
+            except ValueError:
+                ref = f"refs/remotes/origin/{selected}"
+                git(path, "show-ref", "--verify", ref)
+                create = True
+            if current != selected:
+                if f"branch refs/heads/{selected}" in git(path, "worktree", "list", "--porcelain").splitlines():
+                    raise ValueError(f"{repo['name']}: {selected} is checked out in another worktree")
+            plans.append((repo, selected, current, create))
+            return ref
+
+        core_ref = plan(self.core, {"git": self.core["url"], "branch": branch})
+        project = tomllib.loads(git(self.path(self.core), "show", f"{core_ref}:pyproject.toml"))
+        for repo in self.repos:
+            if "source" not in repo:
+                continue
+            source = self.target(repo, project)
+            if not source.get("branch"):
+                print(f"KEEP {repo['name']}: core does not pin a branch")
+                continue
+            plan(repo, source)
+        for repo, selected, current, create in plans:
+            print(f"PLAN {repo['name']}: {current or 'DETACHED'} -> {selected}"
+                  + (" (create from cached origin ref)" if create else " (existing local branch)"))
+        if dry_run:
+            print("Dry run: no changes. Uses local refs; fetch first to discover published branches.")
+            return 0
+        completed = []
+        for repo, selected, current, create in plans:
+            try:
+                if current != selected:
+                    args = ["switch", "--no-overwrite-ignore"]
+                    args.extend(["--track", "-c", selected, f"origin/{selected}"] if create
+                                else ["--no-guess", selected])
+                    git(self.path(repo), *args)
+                completed.append(repo["name"])
+            except (ValueError, OSError) as exc:
+                print(f"ERROR {repo['name']}: {exc}", file=sys.stderr)
+                print(f"Stopped. Switched: {', '.join(completed) or 'none'}. No rollback performed.")
+                return 1
+        print("Branches selected. No pull or environment refresh performed; review status before pull/align.")
+        return 0
 
     def align(self, names: list[str], force: bool = False, dry_run: bool = False) -> int:
         """Fetch, align, pull dependencies, then rebuild repository Python environments."""
@@ -434,6 +510,10 @@ def main(argv: list[str] | None = None) -> int:
     organize_parser.add_argument("--dry-run", action="store_true")
     setup = sub.add_parser("setup", help="Clone missing repositories, core first")
     setup.add_argument("--dry-run", action="store_true")
+    setup.add_argument("--core-branch", help="Override the manifest's initial core branch")
+    switch = sub.add_parser("switch", help="Switch core and dependencies using the selected core branch's sources")
+    switch.add_argument("branch", help="Existing local or cached origin core branch")
+    switch.add_argument("--dry-run", action="store_true")
     status = sub.add_parser("status", help="Inspect local state; does not fetch")
     status.add_argument("--json", action="store_true")
     status.add_argument("--check", action="store_true", help="Exit nonzero for missing/dirty/mismatched checkouts")
@@ -453,7 +533,9 @@ def main(argv: list[str] | None = None) -> int:
             return organize(args.root, args.dry_run)
         workspace = Workspace(args.root)
         if args.command == "setup":
-            return workspace.setup(args.dry_run)
+            return workspace.setup(args.dry_run, args.core_branch)
+        if args.command == "switch":
+            return workspace.switch(args.branch, args.dry_run)
         if args.command == "fetch":
             return workspace.fetch(args.repos, args.dry_run)
         if args.command == "pull":
