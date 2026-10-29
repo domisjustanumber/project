@@ -143,6 +143,22 @@ This handoff is the owner's explicit requirement, not a generic approval step.
 
 ## Development and validation
 
+### References and intellectual provenance
+
+When research, external documentation, tutorials or source repositories inform
+scientific claims, architecture or implementation, register the sources in the
+owning independent repository's root `references.bib` and cite stable keys beside
+the supported claims. Create that file on first use, not preemptively in every
+checkout. Prefer preserving useful references and verified metadata as an
+intellectual paper trail, including sources beyond formal academic publications.
+Use Better BibTeX-compatible BibTeX, explicit `url`, access date, `review` scope
+and `claim` fields; record limited access honestly and never invent metadata.
+Add bibliography/citation validation with the first adoption, and run it when
+citations change. Follow the owning repository's `CITATIONS.md` for exact format
+and checks. Core's policy is in its root `CITATIONS.md`; other repositories adopt
+their own policy and tests when citation-bearing work reaches them. Keep those
+changes within their normal independent review boundaries.
+
 - Run Git and environment commands inside the relevant repository (or use
   `git -C <repo>`). The workspace parent is its own Git repository for tooling
   and guidance; child checkouts are ignored by that repository.
