@@ -14,6 +14,25 @@ New machines use `poe setup`. Child histories remain independent, without submod
 
 ## Authority and scope
 
+## Continuity across compaction and handoffs
+
+For substantial ongoing work, follow the portable
+[context-continuity protocol](agent-guidance/context-continuity/SKILL.md).
+At milestones, preserve the current objective, decisions and reasons, exact
+checkout, existing interfaces, validation evidence, and a short reading list for
+the next action in a task-specific checkpoint. Use an existing task handoff or
+an ignored `.test-artifacts/continuity/<task-id>.md`; name its absolute path in chat.
+
+After compaction or resume, read that checkpoint and the relevant ownership
+sections here, then use the [recovery index](agent-guidance/freemocap-recovery.md)
+to recover only the ontology, contracts and implementation needed next. Confirm
+the checkout against `repos.toml` and Core's source declarations. Continue under
+the existing authorization once the next action's meaning and ownership are
+clear. Search for existing definitions and interfaces before filling gaps.
+Escalate only consequential conflicts about intent that targeted inspection
+cannot resolve; continue independent work. Archives and other worktrees provide
+historical evidence, not implicit approval to change the current strategy.
+
 ## Local work authorization and protected state — explicit owner instruction
 
 Non-mutating commands are always allowed. Run read-only inspection and
@@ -25,7 +44,8 @@ permission to read them; only tool-enforced access approvals may still be needed
 The owner updated this policy on 2026-09-23. Agents may edit source, tests,
 documentation, and other task-related files directly on disk without advance
 patch previews or one-time permission. Preserve existing user work and leave
-changes as unstaged, uncommitted working-tree diffs for human review.
+changes as unstaged, uncommitted working-tree diffs for human review unless the
+owner explicitly authorizes staging, committing, or pushing them.
 
 Tests and diagnostics are authorized on an ongoing basis, including normal
 temporary files, caches, reports, screenshots, traces, and test-managed processes
@@ -45,16 +65,28 @@ with broad file-extension ignores. Before handoff, inspect untracked files and
 check that generated artifacts have not become tracked. Ignore rules do not
 untrack existing files; report those for human-owned Git cleanup. Do not delete
 user data, untrack files, or rewrite history without the owner's direction and
-subject to the Git-state prohibition below.
+subject to the Git authorization policy below.
 
-Agents must never mutate Git or gCloud state. This includes staging, commits,
-amending, tags, pushes, fetches, pulls, branch/index changes, resets, stashes,
-Git configuration changes, and cloud configuration or resource mutations.
-Do not run wrappers that perform these actions. Read-only Git and cloud
-inspection is allowed; prefer Git's --no-optional-locks for status inspection.
-Earlier setup/fetch/pull/align/force authorizations elsewhere in this file are
-historical and do not override this prohibition. The human owns those actions
-and the commit/push handoffs below.
+The owner updated the Git policy on 2026-11-01: agents may mutate Git state with
+the owner's explicit permission for the relevant task and operations. A direct
+instruction in chat, such as "commit and push these changes," is sufficient
+authorization for the necessary staging, commits, and pushes. The owner does not
+need to edit AGENTS.md manually or repeat permission already given for that scope.
+This replaces the earlier blanket ban and human-only commit/push requirements.
+
+Without explicit permission, leave Git state unchanged. Permission to edit or
+test code alone does not authorize Git mutations. Keep authorized operations
+within the agreed repositories, changes, branches, and destinations; preserve
+unrelated work. Permission to commit and push does not authorize destructive
+resets, discarding changes, history rewriting, force-pushes, or release tags.
+Other Git mutations require permission covering those operations as well.
+Inspect wrappers before running them so all their mutations are authorized.
+
+Read-only Git and cloud inspection is allowed; prefer Git's --no-optional-locks
+for status inspection. Agents must not mutate gCloud configuration or resources.
+Historical setup/fetch/pull/align/force notes below are not standing authorization.
+Tool-enforced sandbox and approval checks still apply. If an authorized action
+is rejected, report the exact action and reason; do not bypass the rejection.
 
 
 This file governs work across this workspace and its independent repositories.
@@ -71,12 +103,79 @@ changes to align it with core. This does not authorize discarding other work.
 
 ## Repository ownership and architecture
 
+### Understand established architecture before proposing changes
+
+Before planning or changing a subsystem, recover its purpose, accepted tradeoffs,
+owning interfaces, and existing optimization mechanisms from current source,
+tests, and strategy documents. Trace the actual path end to end. State those
+invariants in the task plan before inventing constraints or proposing alternatives.
+Treat missing context as a research obligation, not evidence that the design is
+missing. Do not ask the owner to reapprove an established decision because an
+agent-authored plan contradicted it; correct the plan and continue authorized work.
+
+**Transport is deliberately fully self-describing.** Every server message carries
+the information needed to interpret it independently. The server sends the message;
+the client interprets that message without requiring matching prior server/client
+state. Repeated metadata and its bandwidth cost are accepted to protect this property.
+Preserve the existing handling of repeated data, metadata identity, validation,
+buffer ownership, and shared realtime/posthoc rendering paths. Do not propose
+delta-only metadata, out-of-band prerequisites, or state-dependent decoding as a
+routine bandwidth optimization. Changes to that strategy require an explicit owner
+request, not an incidental visualization task.
+
+For transport or visualization work, inspect the composition/encoding path,
+connection-owned decoder caches and reconciliation, static-model subscriptions,
+and numerical worker-buffer lifecycle before evaluating cost. Distinguish repeated
+wire metadata from repeated model construction, validation, renderer preparation,
+or worker transfer. Measure the relevant complete path and use existing efficiency
+mechanisms; do not label intentional self-description as a newly discovered defect.
+
+### Thin Core and editable local development
+
+The owner updated this policy on 2026-10-31: development uses editable local
+checkouts, and agents may implement and validate a task across repositories
+without stopping for commits, pushes, or dependency publication between them.
+This supersedes older instructions requiring repository-by-repository handoffs.
+
+Keep FreeMoCap Core minimal. Code belongs in Core only when it inherently
+requires cooperation between multiple subrepositories. Put every behavior that
+can live in an individual subrepository in that repository, including its domain
+logic, schemas, configuration, processing, and tests. Being called by Core does
+not make a behavior Core-owned. Core connects public interfaces and coordinates
+the combined application; it must not reimplement subrepository responsibilities.
+
+Before placing code in Core, identify the subrepositories it must coordinate
+and why the behavior cannot belong to one of them. If it can, implement it there
+and expose the interface Core needs. Cross-repository editing changes the workflow,
+not these ownership boundaries or the requirement for standalone usability.
+
+### Tracking ownership and vocabulary
+
+When changing tracker composition, put detector stage recipes, crop rules,
+keypoint schemas/connections, output assembly, and preset-specific mapping
+selection in SkellyTracker. Core selects the preset and passes application
+settings; it must not reconstruct that recipe or maintain a duplicate schema.
+Verify that the same preset works in standalone Tracker without importing Core.
+Core owns camera/Tracker/Forge integration and only the lifecycle and transport
+coordination that requires multiple subrepositories. Component-specific lifecycle
+and transport belong to the component's repository.
+
+Use **keypoint** for detector output, **mapping** for the rules converting
+keypoints into observations of named anatomical landmarks, and **landmark** for
+the anatomical model point defined in SkellyForge. Tracker owns mapping definitions
+and numerical evaluation; Forge owns anatomical geometry and reconstruction.
+Core may connect those interfaces but must not duplicate their domain algorithms.
+Tracker's `Observation` container is not interchangeable terminology with mapped
+observations of anatomical landmarks. State code ownership separately from which
+application calls it. Keep numerical assembly in dense arrays with prepared indices;
+do not introduce per-keypoint dictionaries or scalar loops on frame paths.
+
 | Directory | Responsibility | Useful entry points |
 | --- | --- | --- |
 | `freemocap/` | Core application: composes the subprojects into the motion capture pipeline | `freemocap/core/pipeline/{realtime,posthoc}/`, `freemocap/core/tasks/`, `freemocap/core/tracking/`, `freemocap/core/streaming/`, `freemocap/api/`, `freemocap/app/` |
 | `skellycam/` | Standalone camera capture, synchronization, recording, and streaming | `skellycam/core/`, `skellycam/api/`, `skellycam-ui/` |
 | `skellytracker/` | Standalone image analysis and detection | `skellytracker/core/`, detector implementations, mapping definitions in `core/io/` |
-| `skellyforge/` | Standalone 3D geometry, skeleton reconstruction, and kinematics | `skellyforge/skellymodels/`, `skellyforge/kinematics/`, `skellyforge/pipelines/`, `skellyforge/post_processing/` |
+| `skellyforge/` | Standalone 3D geometry, skeleton reconstruction, and kinematics | `skellyforge/core/math/`, `skellyforge/core/skeleton/`, `skellyforge/core/biomechanics/`, `skellyforge/definitions/` |
 | `freemocap_blender_addon/` | Downstream receiver for visualization and animation in Blender | `freemocap_blender_addon/freemocap_data_handler/`, `core_functions/`, `blender_ui/` |
 | `utils/skellylogs/` | Shared logging library | `skellylogs/`, `tests/` |
 | `utils/skellypings/` | Telemetry client and separately configured server | `skellypings/`, `server/`, `infra/` |
@@ -87,38 +186,48 @@ Entry points in the last column are relative to their repository.
 - SkellyCam, SkellyTracker, and SkellyForge must remain independently usable.
   They must never import one another, including in tests or type-only imports.
   They must not depend on FreeMoCap core to operate.
-- FreeMoCap core owns composition, cross-repository adapters, and integration
-  contracts. Put checks that need multiple subskellies in core.
+- FreeMoCap core owns only composition, adapters, and integration contracts that
+  require multiple subrepositories. Put checks that need multiple subskellies in
+  Core; keep component behavior and its tests in the owning repository.
 - Shared utilities remain independent packages with their own change lifecycle.
-- Work on one repository at a time. A cross-repository feature must be split
-  into independently reviewable stages with explicit integration handoffs.
-- Do not bypass these boundaries with sibling-path imports, `PYTHONPATH`
-  manipulation, editable sibling installs, or local path dependency overrides.
+- Work across repositories as needed to complete the authorized task. Keep each
+  repository's changes independently reviewable and validate both the owning
+  components and their integration through the configured editable checkouts.
+- Use the configured editable local dependencies through normal package imports.
+  Do not bypass ownership boundaries or package interfaces with sibling-path
+  imports or `PYTHONPATH` manipulation. Editable installation does not authorize
+  imports between SkellyCam, SkellyTracker, and SkellyForge.
 
-## Human-owned commit and push boundary
+## Cross-repository workflow and Git authorization
 
-The human always commits and pushes. Agents must not commit, amend commits,
-create release tags, push, or run wrappers that do these actions automatically.
+The owner controls Git authorization under the policy above. Agents may perform
+explicitly authorized commits and pushes; publication is not a prerequisite for
+working across editable local checkouts.
 
-1. Inspect the target repository's branch, status, diff, dependency declarations,
-   and relevant instructions. Preserve all existing user changes.
-2. Implement and validate the change within that repository.
-3. Present the concrete diff summary, validation results, and any limitations.
-4. When the change is ready for downstream integration, STOP and explicitly ask
-   the human to commit and push the named repository on its required branch.
-   Wait for confirmation; do not refresh downstream dependencies early.
-5. After the human confirms the push, verify the intended remote revision,
-   refresh the relevant dependency in the consumer, and validate integration.
-6. Changes to the consumer, including its lockfile, have their own human
-   commit/push handoff when ready. Never silently advance to the next repository.
+Commit messages, including suggested messages, must be one sentence or less and
+describe only the change. Never mention the agent, its name, or AI assistance;
+never include agent attribution or a `Co-authored-by` trailer for an agent.
 
-This handoff is the owner's explicit requirement, not a generic approval step.
+1. Before editing each affected repository, inspect its branch, status, diff,
+   dependency declarations, and relevant instructions. Preserve existing work.
+2. Assign each behavior to its owning repository before implementation. Keep
+   Core changes limited to necessary coordination between subrepositories.
+3. Implement the component interfaces and consumer integration across the local
+   checkouts. Continue across repository boundaries without commit/push gates.
+4. Validate component behavior in its owning repository and cross-repository
+   integration in Core. Verify that the consumer uses the intended local sources.
+5. Present a per-repository diff summary, validation results, and limitations.
+   Leave changes unstaged and uncommitted unless publication is explicitly
+   authorized. When authorized, inspect the intended diff, stage only the approved
+   changes, commit and push within scope, and verify and report the result.
 
 ## Branch and dependency policy
 
-- `freemocap/pyproject.toml`, especially `[tool.uv.sources]`, is authoritative
-  for dependency branches. Read it each time; do not infer dependency branches
-  from the core checkout's branch name or an old README.
+- `repos/freemocap/pyproject.toml` is authoritative for dependency configuration.
+  Read `[tool.uv.sources]` for installed sources and
+  `[tool.freemocap.workspace.sources]` for editable checkouts' Git URLs and branch
+  targets. For Git UV sources, use their declared branch. Do not infer targets
+  from Core's branch name or an old README.
 - Before implementation in a dependency repository, compare its active branch
   to the branch declared by core. Report a mismatch and resolve it with the
   human before editing. Do not alter core's source declaration merely to fit
@@ -126,16 +235,17 @@ This handoff is the owner's explicit requirement, not a generic approval step.
 - Preserve dirty checkouts. Do not automatically stash, reset, discard, or move
   existing work. The owner explicitly requested that the initial mismatched
   checkouts below remain untouched for now.
-- Sources without an explicit branch do not establish a named branch policy.
-  Inspect the remote default and ask if a deliberate branch pin is needed.
-- A matching branch name does not prove matching code: `uv.lock` records the
-  consumed commit, and the installed environment can lag the lockfile. Verify
-  all three when investigating integration problems. Cached remote-tracking
-  refs are not proof of current remote state.
-- After the human's push, prefer a targeted refresh from the consumer root:
-  `uv lock --upgrade-package <package>`, review the lockfile diff and resolved
-  Git SHA, then `uv sync --locked` with the appropriate dependency groups.
-  Review incidental transitive changes as well.
+- Sources without an explicit branch target do not establish a named branch
+  policy; preserve the current branch unless the task explicitly addresses it.
+- For editable dependencies, verify the configured path, installed editable
+  metadata, and actual import location. The working-tree source, including
+  uncommitted edits, is what the consumer must exercise; a commit SHA alone does
+  not identify that code. Ordinary source edits need no publication or Git refresh.
+- For Git-pinned dependencies, verify the declared source, locked commit, and
+  installed revision when investigating integration problems. Cached remote refs
+  are not proof of current remote state. Dependency installation, lock refreshes,
+  and environment changes still require task authorization; crossing repository
+  boundaries does not itself require them.
 - Do not delete lockfiles as routine setup. The owner explicitly authorized
   `poe align` to delete root uv.lock files and run uv sync across the workspace's
   Python repositories after Git updates, including core. This is a deliberate
@@ -184,17 +294,20 @@ changes within their normal independent review boundaries.
   Streaming/renderer TypeScript tests document esbuild + Node invocation in
   their file headers; `npm run e2e` invokes Playwright.
 - Inspect task bodies before execution. Core's `bump-*` tasks invoke bumpver
-  configured with `commit = true`, `tag = true`, and `push = true`; these violate
-  the human-owned boundary. `poe update` pulls multiple repos and deletes
+  configured with `commit = true`, `tag = true`, and `push = true`; running them
+  requires explicit authorization for all those actions. `poe update` pulls multiple repos and deletes
   `uv.lock`; `poe go` invokes it. Do not use them as routine agent commands.
-- For the current reconstruction/streaming work, start at
-  `freemocap/current-work-plans/ontology.md`, `HANDOFF.md`, and the layer docs.
-  Archived plans are historical. Verify dated handoff claims against current
-  code and Git state; they are not evidence that tests pass today.
-- Current documented geometry conventions are millimeters, right-handed,
-  +Z up, +X forward, wxyz quaternions, identity at T-pose, and
-  `q_local = conj(q_parent) * q_child`. Check the foundation conventions and
-  relevant boundary conversions before changing geometry or transport code.
+- For reconstruction/streaming work, use
+  `repos/freemocap/current-work-plans/01-data-model/ontology.md` and the relevant
+  layer selected through `repos/freemocap/current-work-plans/README.md`.
+  Read the current task's named handoff, not an assumed root `HANDOFF.md`.
+  Archived plans are historical; dated test claims are not fresh verification.
+- Before changing geometry or transport, read
+  `repos/freemocap/current-work-plans/00-foundation/conventions.md` and the owning
+  boundary conversion. Distinguish dimensionless authored geometry from measured
+  millimeters and name the coordinate frame at each boundary; older +X-forward
+  notes do not describe Forge's Blender authoring frame. Use the maintained
+  conventions rather than copying an abbreviated rule into a new implementation.
 
 ## Initial observations — 2026-09-21
 
@@ -209,14 +322,16 @@ changes within their normal independent review boundaries.
 | utils/skellypings | main | Unspecified Git branch | Untracked `env copy.example`; preserve it |
 | utils/skellydocs | main | Not a core Python dependency | Clean |
 
-Known architectural debt: SkellyForge declares SkellyTracker as a dependency
-and imports it in `skellyforge/skellymodels/standard_human/tracker_contract.py`,
+Historical architectural debt observed on 2026-09-21: SkellyForge declared SkellyTracker as a dependency
+and imported it in `skellyforge/skellymodels/standard_human/tracker_contract.py`,
 `skellyforge/tests/test_tracker_contract.py`, and
 `skellyforge/tests/test_face_mapping_consistency.py`. Older comments and handoff
 notes call this a sanctioned exception. The owner's current no-cross-import
 rule supersedes those notes. Do not extend this coupling. Plan its removal and
 relocation of cross-repository validation to core as a separate staged change;
-this orientation task does not authorize an incidental refactor.
+this orientation task does not authorize an incidental refactor. These paths and
+the dependency are absent from the audited 2026-11-01 canonical Forge checkout;
+inspect current sources before treating this historical note as unfinished work.
 
 This workspace-level file is local guidance, outside the independent Git
 repositories. If these instructions need to travel with separate clones,
@@ -237,7 +352,7 @@ repository names it handles all core dependencies. `--force` discards tracked
 changes even when already on the target branch; unpinned dependencies keep their
 current branch. Untracked files are preserved and do not by themselves block pull.
 Only run force where the human has authorized discarding that repository's work.
-Batch commits/pushes remain future work and human-owned.
+Batch commits/pushes require explicit owner authorization for the batch scope.
 
 `poe pull` fetches and fast-forwards manifest repositories, core first, with
 source declarations re-read after core updates. It blocks dirty/mismatched
@@ -249,5 +364,5 @@ dependency branch targets from core's pyproject.toml, avoiding a duplicate branc
 source of truth. A read-only status/preflight command could show expected and
 actual branches, dirty files, upstream state, and core's locked dependency SHAs.
 Later batch mutations should preview their plan, preserve local work, and report
-partial completion clearly. Commit/push operations remain human-run even if a
-helper batches them; tooling does not remove the required human handoff.
+partial completion clearly. Helpers follow the same explicit Git authorization
+policy. Commits and pushes are not prerequisites for local cross-repository work.

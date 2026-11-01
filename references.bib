@@ -1,0 +1,63 @@
+@misc{openaiCodexConfig,
+  author = {{OpenAI}},
+  title = {Sample Configuration},
+  url = {https://learn.chatgpt.com/docs/config-file/config-sample},
+  urldate = {2026-11-01},
+  review = {excerpt},
+  note = {Reviewed instruction overrides, compaction threshold, and cloud orchestration limitations.},
+  claim = {Documents compact prompt overrides and automatic compaction threshold settings; does not verify their use in this desktop chat.}
+}
+@misc{openaiCodexHooks,
+  author = {{OpenAI}},
+  title = {Hooks},
+  url = {https://learn.chatgpt.com/docs/hooks},
+  urldate = {2026-11-01},
+  review = {excerpt},
+  note = {Reviewed discovery, common output, PreCompact, PostCompact and SessionStart sections; corrected the initial omission of SessionStart on 2026-11-01.},
+  claim = {PreCompact and PostCompact expose manual or automatic triggers; SessionStart compact can inject developer context before immediate continuation, including automatic mid-turn compaction.}
+}
+@misc{openaiCodexConfigReference,
+  author = {{OpenAI}},
+  title = {Configuration Reference},
+  url = {https://learn.chatgpt.com/docs/config-file/config-reference},
+  urldate = {2026-11-01},
+  review = {excerpt},
+  note = {Reviewed automatic compaction token limit and total versus body-after-prefix scope.},
+  claim = {Documents configurable automatic compaction thresholds and the context portion counted against them.}
+}
+@misc{openaiCodexAppServer,
+  author = {{OpenAI}},
+  title = {Codex App Server},
+  url = {https://learn.chatgpt.com/docs/app-server},
+  urldate = {2026-11-01},
+  review = {excerpt},
+  note = {Reviewed thread start, manual compact start and compaction event notifications; no live UI thread was mutated through this API.},
+  claim = {thread/compact/start is a manual compaction request with asynchronous progress events, distinct from automatic threshold-triggered compaction.}
+}
+@misc{openaiCompaction,
+  author = {{OpenAI}},
+  title = {Compaction},
+  url = {https://developers.openai.com/api/docs/guides/compaction},
+  urldate = {2026-11-01},
+  review = {excerpt},
+  note = {Reviewed overview and server-side compaction behavior; desktop internals were not inspected.},
+  claim = {The Responses API supports opaque compaction items carrying prior state.}
+}
+@misc{openaiAgentsMd,
+  author = {{OpenAI}},
+  title = {Custom instructions with AGENTS.md},
+  url = {https://learn.chatgpt.com/docs/agent-configuration/agents-md},
+  urldate = {2026-11-01},
+  review = {excerpt},
+  note = {Reviewed global and project instruction discovery and size limits.},
+  claim = {AGENTS.md supplies persistent global and project instructions.}
+}
+@misc{opencvZooMediaPipeHandOnnx,
+  author = {{OpenCV}},
+  title = {Hand pose estimation from MediaPipe Handpose},
+  url = {https://github.com/opencv/opencv_zoo/tree/main/models/handpose_estimation_mediapipe},
+  urldate = {2026-11-01},
+  review = {source-code},
+  note = {Read README and mp_handpose.py via upstream raw files; model binaries and local inference were not tested.},
+  claim = {Provides a MediaPipe-derived ONNX hand model with 21 keypoints and a reference implementation using rotated palm crops and inverse coordinate transforms.}
+}
