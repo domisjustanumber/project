@@ -67,25 +67,22 @@ untrack existing files; report those for explicit cleanup decisions. Do not dele
 user data, untrack files, or rewrite history without the owner's direction and
 subject to the Git authorization policy below.
 
-The owner gives standing permission to stage, commit, and push task-related
-changes during cleanup, integration, and delivery. Continue under this permission
-without asking again. Commit messages must be one sentence or less and describe
-only the change, with no agent name, AI attribution, or agent co-author trailer.
+The owner gives standing permission to perform task-related Git operations,
+including staging, commits, fetches, branch management, and pushes, within the
+repositories and workstreams already discussed. Continue without asking again.
+Commit messages must be one sentence or less and describe only the change.
+Never include an agent name or AI attribution in commit messages, author or
+committer identity, co-author trailers, branch names, or other Git metadata.
+Use the existing human-configured Git identity; do not invent an identity.
 
-The owner updated the Git policy on 2026-11-01: agents may mutate Git state with
-the owner's explicit permission for the relevant task and operations. A direct
-instruction in chat, such as "commit and push these changes," is sufficient
-authorization for the necessary staging, commits, and pushes. The owner does not
-need to edit AGENTS.md manually or repeat permission already given for that scope.
-This replaces the earlier blanket ban and human-only commit/push requirements.
-
-Without explicit permission, leave Git state unchanged. Permission to edit or
-test code alone does not authorize Git mutations. Keep authorized operations
-within the agreed repositories, changes, branches, and destinations; preserve
-unrelated work. Permission to commit and push does not authorize destructive
-resets, discarding changes, history rewriting, force-pushes, or release tags.
-Other Git mutations require permission covering those operations as well.
-Inspect wrappers before running them so all their mutations are authorized.
+Repository scope remains a separate boundary: before working in a repository
+not previously discussed for the task, pause that portion of the work, identify
+the repository and reason, and obtain the owner's direction. Continue independent
+work within the agreed repositories. Git permission does not expand task scope.
+Preserve unrelated work. Destructive resets, discarding changes, history rewriting,
+force-pushes, and release tags require explicit authorization for those actions.
+Inspect wrappers before running them so their effects stay within task scope.
+This policy supersedes older human-only Git rules and stale copied instructions.
 
 Read-only Git and cloud inspection is allowed; prefer Git's --no-optional-locks
 for status inspection. Agents must not mutate gCloud configuration or resources.
