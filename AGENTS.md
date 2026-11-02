@@ -43,9 +43,8 @@ permission to read them; only tool-enforced access approvals may still be needed
 
 The owner updated this policy on 2026-09-23. Agents may edit source, tests,
 documentation, and other task-related files directly on disk without advance
-patch previews or one-time permission. Preserve existing user work and leave
-changes as unstaged, uncommitted working-tree diffs for human review unless the
-owner explicitly authorizes staging, committing, or pushing them.
+patch previews or one-time permission. Preserve existing user work, and stage,
+commit, and push task-related changes under the Git authorization policy below.
 
 Tests and diagnostics are authorized on an ongoing basis, including normal
 temporary files, caches, reports, screenshots, traces, and test-managed processes
@@ -74,6 +73,9 @@ Commit messages must be one sentence or less and describe only the change.
 Never include an agent name or AI attribution in commit messages, author or
 committer identity, co-author trailers, branch names, or other Git metadata.
 Use the existing human-configured Git identity; do not invent an identity.
+Stay on the branch assigned to the task; switch branches only on explicit
+instruction. Editable uv installs of the local checkouts mean changes need no
+commit-and-fetch round trip to reach the app.
 
 Repository scope remains a separate boundary: before working in a repository
 not previously discussed for the task, pause that portion of the work, identify
@@ -202,9 +204,9 @@ Entry points in the last column are relative to their repository.
 
 ## Cross-repository workflow and Git authorization
 
-The owner controls Git authorization under the policy above. Agents may perform
-explicitly authorized commits and pushes; publication is not a prerequisite for
-working across editable local checkouts.
+The owner controls Git authorization under the policy above. Agents commit and
+push task-related work on their assigned branch; publication is not a
+prerequisite for working across editable local checkouts.
 
 Commit messages, including suggested messages, must be one sentence or less and
 describe only the change. Never mention the agent, its name, or AI assistance;
@@ -219,9 +221,8 @@ never include agent attribution or a `Co-authored-by` trailer for an agent.
 4. Validate component behavior in its owning repository and cross-repository
    integration in Core. Verify that the consumer uses the intended local sources.
 5. Present a per-repository diff summary, validation results, and limitations.
-   Leave changes unstaged and uncommitted unless publication is explicitly
-   authorized. When authorized, inspect the intended diff, stage only the approved
-   changes, commit and push within scope, and verify and report the result.
+   Inspect the intended diff, stage only the task's changes, commit and push
+   within scope, and verify and report the result.
 
 ## Branch and dependency policy
 
