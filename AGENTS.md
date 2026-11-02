@@ -63,9 +63,14 @@ processed dataset copies. An outer workspace ignore does not apply inside
 independent child repositories. Never hide source tests or intentional fixtures
 with broad file-extension ignores. Before handoff, inspect untracked files and
 check that generated artifacts have not become tracked. Ignore rules do not
-untrack existing files; report those for human-owned Git cleanup. Do not delete
+untrack existing files; report those for explicit cleanup decisions. Do not delete
 user data, untrack files, or rewrite history without the owner's direction and
 subject to the Git authorization policy below.
+
+The owner gives standing permission to stage, commit, and push task-related
+changes during cleanup, integration, and delivery. Continue under this permission
+without asking again. Commit messages must be one sentence or less and describe
+only the change, with no agent name, AI attribution, or agent co-author trailer.
 
 The owner updated the Git policy on 2026-11-01: agents may mutate Git state with
 the owner's explicit permission for the relevant task and operations. A direct

@@ -140,8 +140,8 @@ Do not implement Blender changes in this secondary task. Return the finalized tr
 
 ## Repository boundaries and delivery
 
-The human owns all Git mutations and starts the secondary agent. Do not spawn another chat or agent on the basis of this handoff. Recheck branches, local diffs, core source declarations, locked SHAs, and installed dependency state. Preserve user work.
+Follow the current workspace Git authorization policy: the owner permits task-related cleanup and integration commits and pushes, with one-sentence-or-shorter messages and no agent attribution. Do not spawn another chat or agent solely on the basis of this historical handoff. Recheck branches, local diffs, core source declarations, and installed dependency state. Preserve user work.
 
-Work in one repository at a time. If Forge or Tracker changes prove necessary, explain the dependency-first stage and stop at its human commit/push handoff before modifying the consumer. Never introduce sibling imports or local path overrides. Do not mutate Git/gCloud state, refresh environments early, or commit/push.
+Work across configured editable checkouts as needed, preserving repository ownership boundaries and standalone usability. Do not introduce sibling imports, unauthorized environment changes, or gCloud mutations. Publication is not a prerequisite for consumer integration.
 
-Leave source changes unstaged and uncommitted. Report validation and inspect untracked files before handoff. When a repository is ready for downstream integration, explicitly ask the human to commit and push it on the branch declared by core, as required by workspace policy.
+Report validation and inspect untracked files before delivery. Commit and push task-related changes under the owner's standing authorization; verify the resulting repository state and publication outcome.
