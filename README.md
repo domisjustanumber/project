@@ -13,6 +13,7 @@ project/
 ├── tests/
 └── repos/                         # ignored by the outer repository
     ├── freemocap/
+    ├── sdk/                       # independent shared SDK development
     ├── skellycam/
     ├── skellytracker/
     ├── skellyforge/
@@ -25,6 +26,12 @@ project/
 
 No application source is copied into this repository. No submodules are used.
 Every child retains its own Git history, remotes, branches, and environment.
+
+The `sdk` checkout is managed by setup, status, fetch and pull, targeting `sfn26`.
+It is not a dependency of the current Core application. SDK development temporarily
+maintains parallel implementations while SkellyClicker adopts the shared packages;
+SkellyCam and Core adoption follow later. `align` and dependency branch switching
+continue to follow Core's declared sources and do not migrate Core to the SDK.
 
 ## New machine
 

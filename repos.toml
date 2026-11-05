@@ -43,3 +43,10 @@ name = "skellydocs"
 path = "repos/utils/skellydocs"
 url = "https://github.com/freemocap/skellydocs"
 branch = "main"
+
+# Shared SDK development is independent of the current Core application's dependencies.
+[[repos]]
+name = "sdk"
+path = "repos/sdk"
+url = "https://github.com/freemocap/sdk"
+branch = "sfn26"
