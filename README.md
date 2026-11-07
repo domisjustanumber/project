@@ -35,10 +35,11 @@ continue to follow Core's declared sources and do not migrate Core to the SDK.
 
 ## New machine
 
-Prerequisites: Git, Python 3.11+, uv, and Rust 1.88+. On Windows, also install
-Visual Studio 2022 Build Tools 17.14 with the "Desktop development with C++"
-workload. `poe align` builds SkellyCam's native `skellycam-rust` package from
-source while syncing Python environments; see its
+Prerequisites: Git, Python 3.11+, uv, and rustup, which installs SkellyCam's
+pinned Rust toolchain on the first build (Rust without rustup must be 1.88+). On
+Windows, also install Visual Studio 2022 Build Tools 17.14 with the "Desktop
+development with C++" workload. `poe align` builds SkellyCam's native
+`skellycam-rust` package from source while syncing Python environments; see its
 [native build prerequisites](https://github.com/freemocap/skellycam/blob/sfn26/RUST-BACKEND-DEVELOPMENT.md#native-build-prerequisites).
 
 Once this workspace is published:
