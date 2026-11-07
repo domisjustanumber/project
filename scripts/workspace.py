@@ -8,9 +8,26 @@ import shutil
 from pathlib import Path
 import subprocess
 import sys
-import tomllib
 
 ROOT = Path(__file__).resolve().parents[1]
+
+if sys.version_info < (3, 11):
+    # Poe resolves `python`/`python3` from PATH, which may be an older system
+    # interpreter. Re-run the same entry point under a uv-provided 3.11+.
+    uv = shutil.which("uv")
+    if not uv:
+        sys.exit(f"Python 3.11+ is required (found {sys.version.split()[0]}) and uv is not on PATH.")
+    if __name__ == "__main__":
+        entry, args = "main", sys.argv[1:]
+    else:
+        entry, args = "poe_main", sys.argv
+    bootstrap = (
+        "import sys; sys.path.insert(0, sys.argv[1]); sys.argv = sys.argv[2:]; "
+        f"import scripts.workspace as w; sys.exit(w.{entry}({'sys.argv' if entry == 'main' else ''}))"
+    )
+    os.execv(uv, [uv, "run", "--no-project", "--python", ">=3.11", "python", "-c", bootstrap, str(ROOT), *args])
+
+import tomllib
 
 
 def git(path: Path, *args: str) -> str:
