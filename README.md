@@ -59,7 +59,9 @@ Follow uv's PATH instructions if `poe` is not found. Poe resolves `python` or
 
 Setup clones core first and reads its Git sources or workspace clone metadata
 to clone dependencies on the declared branches. Existing checkouts are preserved. Align installs Python
-dependencies; frontend npm installs and nested projects remain separate.
+dependencies; frontend npm installs and nested projects remain separate. For Core's
+UI, run `npm install` and then `npm run dev` in `repos/freemocap/freemocap-ui`; the
+install also builds Core's local `@freemocap/client` package.
 This reproduces the layout and workflow, not an exact historical snapshot:
 branch tips move and align intentionally re-resolves Python dependencies.
 
