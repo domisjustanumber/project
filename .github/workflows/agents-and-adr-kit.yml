@@ -1,0 +1,19 @@
+name: Agents and ADR kit
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  kit-tests:
+    name: Kit decision log, module template and tools
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      # The kit tools use only the standard library and the git CLI; the runner's Python 3 is enough.
+      - run: python3 -m unittest discover -s tests -p test_agents_and_adr_kit.py -v
