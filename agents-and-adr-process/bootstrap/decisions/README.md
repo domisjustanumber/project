@@ -56,8 +56,15 @@ The open work is in [open-work.md](open-work.md).
   tool in `tools/` for the rules that it checks. A test in `tools/tests/` is a tool here. An accepted entry is absorbed when the absorb
   documents together state all of its rules. Open work of the entry does not stop the absorb when
   `open-work.md` states that work in full. A link to the entry is not
-  enough. The status `absorbed into` has one link for each absorb document that states a rule of the
-  entry, to the heading that holds those rules or to the file.
+  enough.
+- The status `absorbed into` has one link for each heading that states a rule of the entry. Link a
+  heading one time, also when it states two or more rules. Link a file with no anchor only when the
+  rule is not under a heading, for example in a tool docstring or a YAML file. When the status
+  paragraph is longer than `STATUS_EXEMPTION_LIMIT`, replace the headings of one file with the title
+  heading of that file. Start with the file that has the most links. If the paragraph is still too
+  long, replace the files of one document with the title heading of its
+  main file. A commit that renames a heading repairs each status link to that heading. A change from
+  a file link to heading links is a link repair.
 - The entry that supersedes an old entry restates each rule of the old entry that stays. A link can
   restate a rule. The link must go to a heading of an absorb document, and that heading must state
   the rule. The commit that changes the text under such a heading cites its own entry next to the
