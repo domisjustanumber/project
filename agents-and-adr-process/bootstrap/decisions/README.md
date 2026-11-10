@@ -46,7 +46,11 @@ The open work is in [open-work.md](open-work.md).
   repair of its citations. Each edit adds `_Edited YYYY-MM-DD (#PR): <kind>._` at the end of the
   entry, for example `re-ID from XXXX`. For a
   change of ID, the renamed entry gets `re-ID from XXXX`, and each repaired entry gets
-  `citation repair`. Add these two lines only to an entry that is on `{{DEFAULT_BRANCH}}`.
+  `citation repair`. Add these two lines only to an entry that is on `{{DEFAULT_BRANCH}}`. A plain-text
+  old path in a decided entry or a script stays, and means the same file at
+  its new path.
+- A decision that a document or code refers to must be in an entry. "This log" in an older entry or
+  in the Rules means all logs.
 - An absorb document is one of these: the root or a nested `AGENTS.md`, the skills, {{NORMATIVE_DOCS, for example the spec or the
   contract files}}, the Rules of this file with [template.md](template.md), and the docstring of a
   tool in `tools/` for the rules that it checks. A test in `tools/tests/` is a tool here. An accepted entry is absorbed when the absorb
@@ -78,7 +82,7 @@ The open work is in [open-work.md](open-work.md).
   cites that entry. It needs no entry of its own. A new rule is not a copy.
 - Delete an open-work item when the work is done. Put a dated fact in `open-work.md` or in an
   entry, not in `AGENTS.md`.
-- Put long evidence in a tracked file next to the entry, and link to it. A PR that raises a limit
+- Put long evidence in a tracked file in `evidence/` of the log folder, and link to it. A PR that raises a limit
   of `tools/check_decision_log.py` must add an entry.
 - An ID changes only on a `re-ID:` line of `tools/check_decision_log.py`, to the ID of a new `--new`
   run.
