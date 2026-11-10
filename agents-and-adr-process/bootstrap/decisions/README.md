@@ -1,16 +1,13 @@
 # Decision log
 
 This log records the technical decisions of {{PROJECT}}, with their reasons and evidence. Read this
-file and [open-work.md](open-work.md) before you change {{AREAS}} or the agent instructions. Then read
-the Active entries that apply to your task. Then you do not repeat a settled question or a completed
-measurement. Read a Proposed entry only for work in its section, or when a skill tells you to. Read
-an entry of [historical.md](historical.md) only to find the reason for a decision
+file and [open-work.md](open-work.md) before you change {{AREAS}} or the agent instructions. The
+[Rules](#rules) tell you which entries to read
 ([ADR-0001](entries/0001-decision-log-agents-md-and-private-data.md)).
 
 Each entry gives the decision, its reason, the evidence (when there is evidence), the alternatives
 rejected and a "Not repeated" section for pitfalls already found. When a decision changes, add a new
-entry that supersedes the old entry in full. A change of the text under a heading that an entry
-links does not supersede that entry. The body of a decided entry changes only by the edits
+entry that supersedes the old entry in full. The body of a decided entry changes only by the edits
 that the [Rules](#rules) allow. To write an entry, use [template.md](template.md).
 
 ## Index
@@ -40,6 +37,10 @@ The open work is in [open-work.md](open-work.md).
 
 ## Rules
 
+- Read the Active entries that apply to your task. Then you do not repeat a settled question or a
+  completed measurement. Read a Proposed entry only for work in its section, or when a skill
+  tells you to. Read an entry of [historical.md](historical.md) only to find the reason for a
+  decision.
 - The body of an entry that is not `proposed` changes only by four edits: a link or anchor repair, a
   typo that does not change the meaning, the redaction of private data, and a change of ID with the
   repair of its citations. Each edit adds `_Edited YYYY-MM-DD (#PR): <kind>._` at the end of the
@@ -48,12 +49,15 @@ The open work is in [open-work.md](open-work.md).
   `citation repair`. Add these two lines only to an entry that is on `{{DEFAULT_BRANCH}}`.
 - An absorb document is one of these: the root or a nested `AGENTS.md`, the skills, {{NORMATIVE_DOCS, for example the spec or the
   contract files}}, the Rules of this file with [template.md](template.md), and the docstring of a
-  tool in `tools/` for the rules that it checks. An accepted entry is absorbed when one absorb
-  document states all of its rules.
+  tool in `tools/` for the rules that it checks. A test in `tools/tests/` is a tool here. An accepted entry is absorbed when the absorb
+  documents together state all of its rules. Open work of the entry does not stop the absorb when
+  `open-work.md` states that work in full. A link to the entry is not
+  enough. The status `absorbed into` has one link for each absorb document that states a rule of the
+  entry, to the heading that holds those rules or to the file.
 - The entry that supersedes an old entry restates each rule of the old entry that stays. A link can
   restate a rule. The link must go to a heading of an absorb document, and that heading must state
   the rule. The commit that changes the text under such a heading cites its own entry next to the
-  changed rule.
+  changed rule. That change does not supersede the entry that links the heading.
 - Only these status changes are allowed: `proposed` to `accepted` or `rejected`; `accepted` to
   `superseded by XXXX`, `absorbed into <path>#<anchor>` or `done`; `absorbed into <path>#<anchor>`
   to `superseded by XXXX`; and `evidence` to
@@ -65,9 +69,11 @@ The open work is in [open-work.md](open-work.md).
   alphabet and the size limits. Its docstring states them. `tools/check_links.py` checks the links
   and the full-SHA permalinks. A tool is the source of a rule that it checks.
 - A consolidation entry states the rules that stay from a group of entries, and it supersedes each
-  entry of the group. It changes no decision. Write one when the read-path limit fails.
+  entry of the group. It changes no decision.
 - When the read path is at 90% of its limit or more, first absorb each accepted entry whose rules
-  one absorb document states. Then write a consolidation entry.
+  the absorb documents state. Then
+  write each rule that no absorb document states in the absorb document where it belongs, and
+  absorb its entry.
 - A commit that only makes a workflow, skill, template or tool copy agree with a landed entry
   cites that entry. It needs no entry of its own. A new rule is not a copy.
 - Delete an open-work item when the work is done. Put a dated fact in `open-work.md` or in an
