@@ -57,6 +57,10 @@ The open work is in [open-work.md](open-work.md).
   documents together state all of its rules. Open work of the entry does not stop the absorb when
   `open-work.md` states that work in full. A link to the entry is not
   enough.
+- Absorb at landing. The commit group that writes or lands an entry, or that writes the rules of an
+  entry into the absorb documents, absorbs the entry in its last commit when the absorb documents
+  state all of its rules. This applies in each log, in each skill and without a skill. If an absorb
+  document does not state a rule, the entry stays `accepted`. Do not ask the user.
 - The status `absorbed into` has one link for each heading that states a rule of the entry. Link a
   heading one time, also when it states two or more rules. Link a file with no anchor only when the
   rule is not under a heading, for example in a tool docstring or a YAML file. When the status
@@ -67,7 +71,8 @@ The open work is in [open-work.md](open-work.md).
   a file link to heading links is a link repair.
 - The entry that supersedes an old entry restates each rule of the old entry that stays. A link can
   restate a rule. The link must go to a heading of an absorb document, and that heading must state
-  the rule. The commit that changes the text under such a heading cites its own entry next to the
+  the rule. Link the heading of each kept rule that a heading states. Write text only for a changed
+  rule and for a kept rule that no heading states. The commit that changes the text under such a heading cites its own entry next to the
   changed rule. That change does not supersede the entry that links the heading.
 - Only these status changes are allowed: `proposed` to `accepted` or `rejected`; `accepted` to
   `superseded by XXXX`, `absorbed into <path>#<anchor>` or `done`; `absorbed into <path>#<anchor>`
