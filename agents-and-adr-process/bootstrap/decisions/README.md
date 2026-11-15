@@ -49,6 +49,9 @@ The open work is in [open-work.md](open-work.md).
   `citation repair`. Add these two lines only to an entry that is on `{{DEFAULT_BRANCH}}`. A plain-text
   old path in a decided entry or a script stays, and means the same file at
   its new path.
+- An entry in a commit that is not pushed to a remote can change in that commit, in each part. Make
+  the correction and report it to the user. Do not write a new entry for it, and do not ask. The
+  four edits apply from the first push.
 - A decision that a document or code refers to must be in an entry. "This log" in an older entry or
   in the Rules means all logs.
 - An absorb document is one of these: the root or a nested `AGENTS.md`, the skills, {{NORMATIVE_DOCS, for example the spec or the
