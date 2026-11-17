@@ -34,6 +34,12 @@ INDEX = """# Decision log
 |---|----------|---------|--------|
 {proposed}
 
+### Evidence
+
+| # | Decision | Status |
+|---|----------|--------|
+{evidence}
+
 ## Open work
 """
 
@@ -54,11 +60,12 @@ def make_log(
     entries: dict[str, str] | None = None,
     proposed: str = "",
     log: Path = cdl.LOG_DIR,
+    evidence: str = "",
 ) -> Path:
     log_dir = tmp_path / log
     log_dir.mkdir(parents=True)
     (log_dir / "README.md").write_text(
-        INDEX.format(active=active, proposed=proposed), encoding="utf-8"
+        INDEX.format(active=active, proposed=proposed, evidence=evidence), encoding="utf-8"
     )
     (log_dir / cdl.HISTORICAL).write_text(HISTORY.format(historical=historical), encoding="utf-8")
     (log_dir / cdl.ENTRIES).mkdir()
@@ -147,6 +154,27 @@ def test_an_absorbed_status_links_a_heading_of_each_markdown_file(tmp_path: Path
     assert not any("tools/x.py" in e for e in errors)
 
 
+def test_an_absorbed_status_links_pyproject_only_beside_a_test(tmp_path: Path) -> None:
+    """`pyproject.toml` is an absorb document only for a rule that a test checks (decision 0001)."""
+    root = make_log(
+        tmp_path,
+        historical="\n".join(
+            [
+                row(1, "absorbed into [`pyproject.toml`](../pyproject.toml)"),
+                row(2, "absorbed into `pyproject.toml`, `tools/x.py`", "y"),
+                row(3, "absorbed into [`pyproject.toml`](../pyproject.toml), [`t`](../tools/tests/test_pins.py)", "z"),
+                row(4, "absorbed into `pyproject.toml`, `skellytracker/tests/sub/test_a.py`", "w"),
+            ]
+        ),
+        entries={"0001-x.md": "", "0002-y.md": "", "0003-z.md": "", "0004-w.md": ""},
+    )
+    errors = cdl.check(root)
+    assert errors == [
+        f"historical.md:{line}: status links pyproject.toml with no test file: link the test that checks the rule"
+        for line in (7, 8)
+    ]
+
+
 def test_unknown_status_is_reported(tmp_path: Path) -> None:
     root = make_log(tmp_path, active=row(1, "maybe"), entries={"0001-x.md": ""})
     assert any("unknown status 'maybe'" in e for e in cdl.check(root))
@@ -190,6 +218,28 @@ def test_used_evidence_is_historical(tmp_path: Path) -> None:
     )
     assert cdl.check(root) == [
         "README.md:10: status 'evidence; used by 0001' must not be in the Active table"
+    ]
+
+
+def test_evidence_entries_are_in_the_evidence_table_and_not_in_the_read_path(tmp_path: Path) -> None:
+    """An `evidence` entry has its row in the Evidence table, off the read path (decision 0001)."""
+    root = make_log(
+        tmp_path,
+        active=row(1, "accepted"),
+        evidence=row(2, "evidence", "y"),
+        entries={"0001-x.md": "a" * 100, "0002-y.md": "b" * 1000},
+    )
+    assert cdl.check(root) == []
+    assert cdl.read_path_size(root) == cdl.size(root / cdl.LOG_DIR / "README.md") + 100
+    root = make_log(
+        tmp_path / "wrong",
+        active=row(1, "evidence"),
+        evidence=row(2, "accepted", "y"),
+        entries={"0001-x.md": "", "0002-y.md": ""},
+    )
+    assert cdl.check(root) == [
+        "README.md:9: status 'evidence' must not be in the Active table",
+        "README.md:21: status 'accepted' must not be in the Evidence table",
     ]
 
 

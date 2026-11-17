@@ -10,7 +10,15 @@ a file in this module. Also read the root index and the root open work. Read an 
 
 ### Active
 
-These entries are `accepted` or `evidence`.
+These entries are `accepted`.
+
+| # | Decision | Status |
+|---|----------|--------|
+
+### Evidence
+
+These entries are `evidence`: measurements. They are not in the read path. Scan these rows before
+you make a measurement.
 
 | # | Decision | Status |
 |---|----------|--------|

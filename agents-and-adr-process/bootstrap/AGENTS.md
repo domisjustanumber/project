@@ -67,7 +67,7 @@ changes is in that module.
 All other entries go in the root log, also each case that you cannot decide.
 A new module log needs the approval of the user. The PR that adds it also adds its folder to
 `LOG_DIRS` of `tools/check_decision_log.py`.
-Each log has a `README.md` with an Active table, a Proposed table and `## Open work`, a
+Each log has a `README.md` with an Active table, an Evidence table, a Proposed table and `## Open work`, a
 `historical.md`, an `open-work.md` and its entry files in `entries/`. The Rules and `template.md` are only in the root log.
 All logs have one ID space. Do not add a module name to an ID.
 When the scope of a module entry grows to more than one module, a new root entry supersedes it.

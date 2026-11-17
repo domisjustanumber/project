@@ -206,14 +206,16 @@ Put the kit in one commit, in one docs PR. Do not push without the approval of t
 
 ### Status and tables
 
-The index (`README.md`) has the Active and Proposed tables. `historical.md` has the Historical
-table, and `template.md` has the entry template. An agent reads the index, `open-work.md` and the
-Active entries that apply to its task. These files are the read path. It reads a Proposed entry only
-for work in its section, and a Historical entry only to find the reason for a decision.
+The index (`README.md`) has the Active, Evidence and Proposed tables. `historical.md` has the
+Historical table, and `template.md` has the entry template. An agent reads the index, `open-work.md`
+and the Active entries that apply to its task. These files are the read path. It scans the rows of
+the Evidence table before it makes a measurement. It reads a Proposed entry only for work in its
+section, and a Historical entry only to find the reason for a decision.
 
 | Table | File | Status forms |
 |---|---|---|
-| Active | `README.md` | `accepted`, `evidence` |
+| Active | `README.md` | `accepted` |
+| Evidence | `README.md` | `evidence`. The entries are not in the read path. |
 | Proposed | `README.md` | `proposed`. The row also has a Section cell: an ID in backticks, or `none`. |
 | Historical | `historical.md` | `evidence; used by XXXX`, `rejected`, `superseded by XXXX`, `absorbed into <path>#<anchor>`, `done` |
 

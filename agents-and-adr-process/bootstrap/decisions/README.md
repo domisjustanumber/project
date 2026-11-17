@@ -14,11 +14,19 @@ that the [Rules](#rules) allow. To write an entry, use [template.md](template.md
 
 ### Active
 
-These entries are `accepted` or `evidence`.
+These entries are `accepted`.
 
 | # | Decision | Status |
 |---|----------|--------|
 | [0001](entries/0001-decision-log-agents-md-and-private-data.md) | Decision log and its rules; `AGENTS.md` files hold the instructions; `plans/` is local; no private data | accepted |
+
+### Evidence
+
+These entries are `evidence`: measurements. They are not in the read path. Scan these rows before
+you make a measurement ([Rules](#rules)).
+
+| # | Decision | Status |
+|---|----------|--------|
 
 ### Proposed
 
@@ -37,8 +45,10 @@ The open work is in [open-work.md](open-work.md).
 
 ## Rules
 
-- Read the Active entries that apply to your task. Then you do not repeat a settled question or a
-  completed measurement. Read a Proposed entry only for work in its section, or when a skill
+- Read the Active entries that apply to your task. Then you do not repeat a settled question. Before
+  you make a measurement, scan the rows of the Evidence table of each log, and read the entries that
+  apply. Then you do not repeat a completed measurement. The Evidence entries are not in the read
+  path. Read a Proposed entry only for work in its section, or when a skill
   tells you to. Read an entry of [historical.md](historical.md) only to find the reason for a
   decision.
 - The body of an entry that is not `proposed` changes only by four edits: a link or anchor repair, a
@@ -56,7 +66,10 @@ The open work is in [open-work.md](open-work.md).
   in the Rules means all logs.
 - An absorb document is one of these: the root or a nested `AGENTS.md`, the skills, {{NORMATIVE_DOCS, for example the spec or the
   contract files}}, the Rules of this file with [template.md](template.md), and the docstring of a
-  tool in `tools/` for the rules that it checks. A test in `tools/tests/` is a tool here. An accepted entry is absorbed when the absorb
+  tool in `tools/` for the rules that it checks. A test in `tools/tests/` or in the
+  tests of the package is a tool here: its docstring states the rules that it checks.
+  `pyproject.toml` is an absorb document for a rule that a test checks. Its `absorbed into` link
+  stands beside the link of that test. An accepted entry is absorbed when the absorb
   documents together state all of its rules. Open work of the entry does not stop the absorb when
   `open-work.md` states that work in full. A link to the entry is not
   enough.
