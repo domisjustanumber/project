@@ -17,3 +17,5 @@ jobs:
       - uses: actions/checkout@v5
       # The kit tools use only the standard library and the git CLI; the runner's Python 3 is enough.
       - run: python3 -m unittest discover -s tests -p test_agents_and_adr_kit.py -v
+      # No camera recording or camera frame in this repository. Only golden reference files pass.
+      - run: python3 agents-and-adr-process/bootstrap/tools/check_camera_media.py --all

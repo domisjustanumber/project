@@ -18,8 +18,9 @@ restates. The kit has their final form. It does not have their history.
 | [`decisions/historical.md`](bootstrap/decisions/historical.md), [`decisions/template.md`](bootstrap/decisions/template.md) | the same paths | Copy |
 | [`decisions/open-work.md`](bootstrap/decisions/open-work.md) | the same path | Replace the example item, or delete it |
 | [`decisions/entries/0001-…`](bootstrap/decisions/entries/0001-decision-log-agents-md-and-private-data.md) | the same path | Fill in the date |
-| `tools/check_decision_log.py`, `tools/check_links.py`, `tools/check_private_data.py`, `tools/check_ai_attribution.py` | the same paths | Copy. Add the public contact address of the project to `ALLOWED_EMAILS`. |
-| `tools/tests/conftest.py` and the four `test_*.py` files | the same paths | Copy |
+| `tools/check_decision_log.py`, `tools/check_links.py`, `tools/check_private_data.py`, `tools/check_ai_attribution.py`, `tools/check_camera_media.py` | the same paths | Copy. Add the public contact address of the project to `ALLOWED_EMAILS`. Set `GOLDEN_PATHS` in `check_camera_media.py` to the folders of the golden reference files, or to `()`. |
+| `tools/tests/conftest.py` and the five `test_*.py` files | the same paths | Copy |
+| [`.claude/skills/commit-files/SKILL.md`](bootstrap/.claude/skills/commit-files/SKILL.md) | the same path | Copy |
 | `.pre-commit-config.yaml`, `.gitleaks.toml` | the same paths | Copy |
 | `.github/workflows/secrets.yml`, `.github/workflows/doc-checks.yml` | the same paths | Copy. In `secrets.yml`, change `branches: [main]` if PRs target a different branch. |
 | [`gitignore-additions.txt`](bootstrap/gitignore-additions.txt) | `.gitignore` | Append the lines. Do not copy the file as `.gitignore`. |
@@ -28,9 +29,9 @@ restates. The kit has their final form. It does not have their history.
 The module template is in [`module/`](module/), not in `bootstrap/`, because it goes into a module
 folder, not into the repo root.
 
-The four tools use only the Python standard library and the git CLI. They count the decision log,
-check the links, scan the tracked files and check the commit message for AI attribution. Their tests
-run with `pytest`.
+The five tools use only the Python standard library and the git CLI. They count the decision log,
+check the links, scan the tracked files, check the commit message for AI attribution and refuse
+camera recordings and camera frames. Their tests run with `pytest`.
 
 ## Procedure
 
@@ -57,8 +58,8 @@ the user tells you to.
 
 ### Step 2: Copy the files
 
-Copy each file of the table above. Keep the dot files: `.pre-commit-config.yaml`, `.gitleaks.toml`
-and `.github/`. With a local checkout of freemocap/project in `../project`, for example:
+Copy each file of the table above. Keep the dot files: `.pre-commit-config.yaml`, `.gitleaks.toml`,
+`.claude/` and `.github/`. With a local checkout of freemocap/project in `../project`, for example:
 
 ```sh
 KIT=../project/agents-and-adr-process/bootstrap
@@ -145,6 +146,7 @@ uv run pytest tools/tests
 uv run python tools/check_decision_log.py
 uv run python tools/check_decision_log.py --new
 uv run python tools/check_private_data.py
+uv run python tools/check_camera_media.py --all
 uv run pre-commit install
 uv run pre-commit run --all-files
 uv run pre-commit run --hook-stage pre-push --all-files
@@ -370,12 +372,17 @@ rules needs one PR in each repo. Cite the mirror entry of the other repo with th
 
 ## Private data
 
-The rule is in section 8 of [`AGENTS.md`](bootstrap/AGENTS.md#8-private-data). Three tools enforce
+The rule is in section 8 of [`AGENTS.md`](bootstrap/AGENTS.md#8-private-data). Four tools enforce
 it:
 
 - `tools/check_private_data.py` finds user-folder paths, email addresses, private IP addresses,
   tokens and the terms of the untracked file `.private-terms`. It skips lock files, because they
   hold four-part versions that look like IP addresses.
+- `tools/check_camera_media.py` refuses a camera recording or a camera frame in the files of a
+  commit, by its extension and by its first bytes. The one exception is a golden reference file:
+  its path starts with an item of `GOLDEN_PATHS`. `--all` lists the tracked files that the rule
+  refuses. The [`commit-files`](bootstrap/.claude/skills/commit-files/SKILL.md) skill gives the
+  steps before a commit.
 - The `gitleaks` pre-commit hook scans each commit before it is made.
 - The `secrets.yml` workflow scans the history on each push. It downloads the pinned `gitleaks`
   binary and checks its SHA-256. Do not use `gitleaks-action`: it needs a license key for an

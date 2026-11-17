@@ -17,7 +17,7 @@ Keep technical names, field names, values, formulas, code and YAML unchanged.
 | `AGENTS.md` | The root instructions file for coding agents |
 | `CLAUDE.md` | Imports this file. It has no other content. |
 | `decisions/` | Decision log ([`README.md`](decisions/README.md)) and its open work ([`open-work.md`](decisions/open-work.md)) |
-| `tools/` | The doc checks: `check_decision_log.py`, `check_links.py` and `check_private_data.py`. Their tests are in `tools/tests/`. |
+| `tools/` | The doc checks: `check_decision_log.py`, `check_links.py`, `check_private_data.py` and `check_camera_media.py`. Their tests are in `tools/tests/`. |
 | `plans/` | A local working folder. Git ignores it. |
 | `{{MODULE}}/` | {{MODULE_ROLE}}. Its `AGENTS.md` holds the rules for the work in it. Its log is in `{{MODULE}}/decisions/`. |
 | {{PATH}} | {{ROLE}} |
@@ -32,6 +32,7 @@ The rules in this file also apply.
 
 | Skill | Use it to |
 |---|---|
+| [`commit-files`](.claude/skills/commit-files/SKILL.md) | Make a commit, or add a recording, a camera frame, an image or another large file |
 | {{SKILL_NAME}} | {{WHEN_TO_USE_IT}} |
 
 ## 3. Install and Test
@@ -46,7 +47,8 @@ Do not depend on an activated virtual environment.
 Run `{{TEST_COMMAND, for example uv run pytest}}`.
 These tests must pass.
 Run `uv run pytest tools/tests` to run only the doc checks.
-The doc checks test the decision log, the relative links and the private-data rule.
+The doc checks test the decision log, the relative links, the private-data rule and the camera-media
+rule.
 Report each new test failure to the user.
 Fix the failures of one root cause in one PR.
 
@@ -130,6 +132,18 @@ Do not write these in a tracked file, a commit message or a PR body:
 - a private URL or a private IP address;
 - a raw dump of `env`, `pip list`, `nvidia-smi` or `docker inspect`.
 
+Do not commit a camera recording (video or audio) or a camera frame (a still image or a raw frame
+from a camera). These files are large, and they can contain private information. The one exception
+is a golden reference file: its path starts with an item of `GOLDEN_PATHS` in
+`tools/check_camera_media.py`. Load the [`commit-files`](.claude/skills/commit-files/SKILL.md)
+skill before each commit.
+
+- A screenshot that shows a camera image is a camera frame. A chart, a diagram or a UI screenshot
+  that shows no camera image is not a camera frame.
+- A results folder can hold summaries, for example JSON, CSV and Markdown files. It must not hold
+  the media. Keep large media outside the repository.
+- To show a camera frame to the user, give its local path. Do not commit the frame.
+
 - Use paths relative to the repository, for example `../{{SIBLING_REPO}}/notes/`.
 - Give a measurement as a summary with its tool and its version.
 - A report field or a test fake can contain a hostname.
@@ -138,8 +152,8 @@ Do not write these in a tracked file, a commit message or a PR body:
   ignores that file. Do not commit it.
 - If you find private data in a tracked file, remove it with a redaction edit. Then tell the user,
   because git history keeps the data. Also revoke a leaked credential.
-- The pre-commit hook runs `gitleaks` and `tools/check_private_data.py`. CI runs `gitleaks` on each
-  push and PR. `.gitleaks.toml` holds the reviewed false positives.
+- The pre-commit hook runs `gitleaks`, `tools/check_private_data.py` and
+  `tools/check_camera_media.py`. CI runs `gitleaks` on each push and PR. `.gitleaks.toml` holds the reviewed false positives.
 - The commit-msg hook warns about AI attribution. If you are an AI agent and you see
   this warning, tell the user.
 - Turn on secret scanning and push protection for a private repository on the day that it becomes

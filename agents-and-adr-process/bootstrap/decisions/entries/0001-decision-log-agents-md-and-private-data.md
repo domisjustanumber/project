@@ -25,7 +25,8 @@
 5. **Private data.** [`AGENTS.md`](../../AGENTS.md#8-private-data) gives the rule.
    `tools/check_private_data.py` checks the tracked files. The pre-commit hook and the workflow
    `.github/workflows/secrets.yml` run `gitleaks`. `.private-terms` is a local, untracked list of
-   terms to block.
+   terms to block. A camera recording or a camera frame is not committed, except a golden reference
+   file. `tools/check_camera_media.py` checks the files of each commit.
 6. **Links.** `tools/check_links.py` checks the relative links and their anchors. A GitHub link in
    `AGENTS.md`, `notes/`, `decisions/` or `.claude/skills/` must pin a full SHA.
 
@@ -38,7 +39,8 @@
   grows with each entry, also when the number of rules does not grow.
 - A partial supersession makes a reader join two or three entries to find the current rule.
 - The repo is public, or it can become public. Git history is permanent. A pasted command output can
-  hold paths, user names and tokens.
+  hold paths, user names and tokens. A camera recording or a camera frame is large, and it can show
+  people and rooms.
 - A test makes each rule a check that CI runs. A written rule alone does not stop a mistake.
 
 ## Consequences
