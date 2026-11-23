@@ -18,6 +18,8 @@ from unittest.mock import patch
 PROJECT = Path(__file__).resolve().parents[1]
 KIT = PROJECT / "agents-and-adr-process"
 BOOTSTRAP = KIT / "bootstrap"
+# The kit tools import tools/kit_config.py. Each tool gives it its own root, so one copy serves all.
+sys.path.insert(0, str(BOOTSTRAP / "tools"))
 VALUES = {
     "DEFAULT_BRANCH_TEXT": "upstream `development`",
     "AREAS": "the code, the CI",
@@ -288,6 +290,20 @@ class KitSyncTests(unittest.TestCase):
         self.assertIn("AGENTS.md#other-systems", ks.load_config(self.repo)["kit"]["hashes"])
         self.assertEqual(self.check_errors(), [])
 
+    def test_check_finds_a_value_that_pull_did_not_fill_in(self):
+        self.edit("kit.toml", f'AREAS = "{VALUES["AREAS"]}"', 'AREAS = "the code"')
+        self.assertEqual([e.split(":")[0] for e in self.check_errors()], ["kit"])
+        self.pull()
+        self.assertIn("before you change the code or these instructions.", (self.repo / "AGENTS.md").read_text(encoding="utf-8"))
+        self.assertEqual(self.check_errors(), [])
+
+    def test_the_advice_of_check_names_replace_and_propose(self):
+        self.edit("AGENTS.md", "Use short sentences.", "Use short sentences. Local change.")
+        self.pull()
+        [error] = self.check_errors()
+        self.assertIn("pull --replace AGENTS.md#writing-rules", error)
+        self.assertIn("propose", error)
+
     def test_a_unit_that_the_repository_skips_is_not_written(self):
         self.edit("kit.toml", "# skip = [", 'skip = [".github/workflows/doc-checks.yml"]\n# skip = [')
         self.pull()
@@ -355,7 +371,7 @@ class KitManifestTests(unittest.TestCase):
                 "[check_decision_log]\nmodule_logs = [\"m/decisions\"]\ntarget_branch = \"development\"\n"
                 "index_limit = 24_000\n\n[check_private_data]\nallowed_emails = [\"Contact@Example.org\"]\n"
                 "[[check_private_data.allowed_lines]]\npath = \"a.md\"\nline = 3\nsha256 = \"" + "0" * 64 + "\"\nreason = \"r\"\n\n"
-                "[check_camera_media]\ngolden_paths = []\n",
+                "[check_camera_media]\ngolden_paths = [\"media/\"]\n",
                 encoding="utf-8",
             )
             cdl = load(root / "tools" / "check_decision_log.py", "kit_cdl_values")
@@ -365,10 +381,23 @@ class KitManifestTests(unittest.TestCase):
             self.assertEqual((cdl.TARGET_BRANCH, cdl.INDEX_LIMIT, cdl.READ_PATH_LIMIT), ("development", 24_000, 220_000))
             self.assertIn("contact@example.org", cpd.ALLOWED_EMAILS)
             self.assertEqual(cpd.ALLOWED_LINES, {("a.md", 3): ("0" * 64, "r")})
-            self.assertEqual(ccm.GOLDEN_PATHS, ())
-            (root / "kit.toml").write_text("[check_camera_media]\ngolden_path = []\n", encoding="utf-8")
-            with self.assertRaises(SystemExit):
-                load(root / "tools" / "check_camera_media.py", "kit_ccm_typo")
+            self.assertEqual(ccm.GOLDEN_PATHS, ("media/",))
+            # Fail closed: a misspelt key, a misspelt or missing table, or a value of the wrong type stops the tool.
+            for config in (
+                "[check_camera_media]\ngolden_path = []\n",
+                "[check_camera_medai]\ngolden_paths = []\n",
+                "[check_decision_log]\n",
+            ):
+                (root / "kit.toml").write_text(config, encoding="utf-8")
+                with self.assertRaises(SystemExit, msg=config):
+                    load(root / "tools" / "check_camera_media.py", "kit_ccm_closed")
+            for config in ('[check_decision_log]\nmodule_logs = "m/decisions"\n', '[check_decision_log]\nindex_limit = "24000"\n'):
+                (root / "kit.toml").write_text(config, encoding="utf-8")
+                with self.assertRaisesRegex(SystemExit, "the value must be", msg=config):
+                    load(root / "tools" / "check_decision_log.py", "kit_cdl_types")
+            # With an empty table, the default of golden_paths allows no golden file.
+            (root / "kit.toml").write_text("[check_camera_media]\n", encoding="utf-8")
+            self.assertEqual(load(root / "tools" / "check_camera_media.py", "kit_ccm_default").GOLDEN_PATHS, ())
 
 
 if __name__ == "__main__":

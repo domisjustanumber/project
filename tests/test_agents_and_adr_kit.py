@@ -10,6 +10,8 @@ from unittest.mock import patch
 
 KIT_ROOT = Path(__file__).resolve().parents[1] / "agents-and-adr-process" / "bootstrap"
 MODULE_ROOT = KIT_ROOT.parent / "module"
+# The kit tools import tools/kit_config.py. Each tool gives it its own root, so one copy serves all.
+sys.path.insert(0, str(KIT_ROOT / "tools"))
 
 
 def load(path, name):

@@ -6,6 +6,9 @@
 path = "tools/kit_sync.py"
 
 [[file]]
+path = "tools/kit_config.py"
+
+[[file]]
 path = "tools/check_decision_log.py"
 
 [[file]]

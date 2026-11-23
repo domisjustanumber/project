@@ -21,7 +21,7 @@ takes the changes of the kit, and it gives its own changes back, with `tools/kit
 | [`decisions/open-work.md`](bootstrap/decisions/open-work.md) | the same path | Replace the example item, or delete it |
 | [`decisions/entries/0001-…`](bootstrap/decisions/entries/0001-decision-log-agents-md-and-private-data.md) | the same path | Fill in the date |
 | [`kit.toml`](bootstrap/kit.toml) | `kit.toml` | Fill in `[values]` and the tables of the tools, for example the public contact address of the project in `allowed_emails` and the folders of the golden reference files in `golden_paths` |
-| `tools/check_decision_log.py`, `tools/check_links.py`, `tools/check_private_data.py`, `tools/check_ai_attribution.py`, `tools/check_camera_media.py`, `tools/check_line_ends.py`, `tools/kit_sync.py` | the same paths | Copy. They read the values of the repo from `kit.toml`. |
+| `tools/check_decision_log.py`, `tools/check_links.py`, `tools/check_private_data.py`, `tools/check_ai_attribution.py`, `tools/check_camera_media.py`, `tools/check_line_ends.py`, `tools/kit_sync.py`, `tools/kit_config.py` | the same paths | Copy. The tools read the values of the repo from `kit.toml` with `kit_config.py`. |
 | `tools/tests/conftest.py` and the seven `test_*.py` files | the same paths | Copy |
 | [`.claude/skills/commit-files/SKILL.md`](bootstrap/.claude/skills/commit-files/SKILL.md), [`.claude/skills/change-decision-log/SKILL.md`](bootstrap/.claude/skills/change-decision-log/SKILL.md) | the same paths | Copy |
 | `.pre-commit-config.yaml`, `.gitleaks.toml`, `.gitattributes` | the same paths | Copy. If the repo has a `.gitattributes`, put the kit block first in it. |
@@ -481,6 +481,7 @@ back to the kit. `tools/kit_sync.py` does both. The kit tools read the values of
   0001 and the module templates. Then they are repo text. A repo can delete `CLAUDE.md`, or not
   track it.
 - The kit text cites no entry of a repo, only the kit entry 0001. `propose` refuses a new citation.
+  A repo cites its own entry for a kit rule in repo text, after the block.
 
 A value of a repo in a unit is a placeholder `{{NAME}}` in the kit. `[values]` of `kit.toml` gives
 the value, in one line of text.
@@ -493,8 +494,8 @@ the value, in one line of text.
 |---|---|
 | `[sync]` | `adopt`: only these unit IDs (default: all units). `skip`: the unit IDs that the repo does not take. `kit`: the path of the kit checkout. |
 | `[values]` | The value of each placeholder |
-| `[check_decision_log]`, `[check_private_data]`, `[check_camera_media]` | The values of each tool. The docstring of the tool lists them. |
-| `[kit]` | `pull` and `propose` write it: the kit commit, the SHA-256 of the filled text of each unit at that commit, and each local change that waits for the kit. Do not edit it. |
+| `[check_decision_log]`, `[check_private_data]`, `[check_links]`, `[check_camera_media]` | The values of each tool. The docstring of the tool lists them. Keep each table, also when it is empty: `tools/kit_config.py` stops a tool when its table is missing, when a key is unknown, or when a value has the wrong type. The default of `golden_paths` allows no golden file. |
+| `[kit]` | `pull` and `propose` write it: the kit commit, the SHA-256 of `[values]` and of the filled text of each unit at that commit, and each local change that waits for the kit. Do not edit it. |
 
 ### Commands
 
@@ -529,6 +530,16 @@ is in the `repos/` folder of this repository. `--kit PATH` gives another place.
    example `(skellycam ADR-K9B7)`. The user reviews it.
 4. `pull` in each repo that uses the kit. The body of that commit gives the kit commit. In the repo
    of step 1, `pull` changes no text and removes the waiting change from `kit.toml`.
+
+### Merge a branch from before the sync
+
+A branch that started before the repo took the kit has the old layout. When you merge it:
+
+- Put each new Evidence row in `decisions/evidence.md`, not in the index.
+- Put each new rule of the log outside the kit blocks, or propose it to the kit.
+- A change of a kit file or a kit block needs an entry, and then `propose`, or the unit ID in
+  `skip` of `kit.toml`.
+- Run `uv run python tools/kit_sync.py check`. It must pass.
 
 [`tests/test_kit_sync.py`](../tests/test_kit_sync.py) of this repository tests `pull` and `propose`.
 It also checks that no unit holds the name of a repo, and that each placeholder of a unit has a

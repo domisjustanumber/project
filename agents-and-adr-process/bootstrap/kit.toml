@@ -1,6 +1,7 @@
 # The values of this repository for the kit tools (decision 0001). This repository owns this file.
 # tools/kit_sync.py fills each placeholder of the kit text with a value of [values]. The check tools
-# read their tables. Each commented line gives the default.
+# read their tables. Each commented line gives the default. Keep each table, also when it is empty:
+# a tool stops when its table is missing, when a key is unknown, or when a value has the wrong type.
 
 [sync]
 # adopt = ["AGENTS.md#writing-rules"]  # Only these unit IDs of the kit manifest. Default: all units.
@@ -36,4 +37,4 @@ PYTHON_VERSION = "3.13.18"  # The Python of the doc checks in CI. At least 3.13.
 # skipped_folders = ["specs/records/"]  # Folders of frozen copies. Their README.md is still checked.
 
 [check_camera_media]
-# golden_paths = ["golden/"]  # The path prefixes of the golden reference files. [] allows none.
+# golden_paths = ["golden/"]  # The path prefixes of the golden reference files. Default: none.
