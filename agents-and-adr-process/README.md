@@ -46,8 +46,9 @@ the user tells you to.
 
 1. Is the repo public now, or can it become public? Default: yes. The private-data rule applies in
    both cases.
-2. Which branch do PRs target? Default: `main`. The kit calls it `{{DEFAULT_BRANCH}}`. It is a value
-   in `kit.toml`.
+2. Which branch do PRs target? Default: `main`. The templates call it `{{DEFAULT_BRANCH}}`. In
+   `kit.toml`, the value `DEFAULT_BRANCH_TEXT` gives it as Markdown text for the kit blocks, for
+   example `` `main` `` or ``upstream `development` ``, and `target_branch` gives the bare name.
 3. Which kinds of change go in separate PRs? Default: code, docs and CI.
 4. Which documents are normative, in addition to `AGENTS.md` and the skills? Examples: a spec, a
    contract file, an API reference. An entry is absorbed only when a normative document states all
@@ -468,6 +469,10 @@ back to the kit. `tools/kit_sync.py` does both. The kit tools read the values of
   `<path>#<name>`, for example `AGENTS.md#private-data`. Keep the marker lines in the repo.
 - All other text is repo text. The sync does not change it. Put a rule that only one repo needs in
   repo text, after the block, not in the block.
+- Step 2 copies the other kit files one time: `CLAUDE.md`, `decisions/open-work.md`, the entry
+  0001 and the module templates. Then they are repo text. A repo can delete `CLAUDE.md`, or not
+  track it.
+- The kit text cites no entry of a repo, only the kit entry 0001. `propose` refuses a new citation.
 
 A value of a repo in a unit is a placeholder `{{NAME}}` in the kit. `[values]` of `kit.toml` gives
 the value, in one line of text.

@@ -8,13 +8,12 @@
 # kit = "../project"  # The path of the freemocap/project checkout.
 
 [values]
-DEFAULT_BRANCH = "main"  # The branch that PRs target.
+DEFAULT_BRANCH_TEXT = "`main`"  # The branch that PRs target, as Markdown text, for example "upstream `development`".
 AREAS = "the code, the CI"  # What an agent must not change before it reads the decision log.
 NORMATIVE_DOCS = "none"  # The binding documents, for example "the specs in `specs/`".
 SIBLING_PATH = "../other-repo/notes/"  # A path relative to the repository, as an example in AGENTS.md.
 SECRET_SCAN_BRANCHES = "[main]"  # The branches of a PR that the secret scan checks.
 PYTHON_VERSION = "3.13.18"  # The Python of the doc checks in CI. At least 3.13.
-UV_VERSION = "0.13.7"  # The uv of the doc checks in CI. At least 14 days old.
 
 [check_decision_log]
 # module_logs = ["server/decisions"]  # The folder of each module log.
@@ -31,6 +30,9 @@ UV_VERSION = "0.13.7"  # The uv of the doc checks in CI. At least 14 days old.
 # line = 1
 # sha256 = "<64 hex characters>"
 # reason = "upstream author credit"
+
+[check_links]
+# skipped_folders = ["specs/records/"]  # Folders of frozen copies. Their README.md is still checked.
 
 [check_camera_media]
 # golden_paths = ["golden/"]  # The path prefixes of the golden reference files. [] allows none.

@@ -9,8 +9,9 @@ In each `AGENTS.md`, `notes/`, `.claude/skills/` and folder named `decisions`, a
 GitHub `blob`, `tree` or `commit` link must pin a full 40-character SHA
 (decision 0001).
 
-The check skips the files in the folders of `specs/model-sidecar/proposals/`. A proposal record
-is a frozen byte copy. The check covers `specs/model-sidecar/proposals/README.md` (decision 1HKJ).
+The check skips the files in each folder of `skipped_folders` in the table `[check_links]` of
+`kit.toml` in the repository root, for example a folder of frozen byte copies of proposal records.
+It still checks the `README.md` of such a folder (decision 0001).
 """
 
 from __future__ import annotations
@@ -20,6 +21,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 from urllib.parse import unquote
 
@@ -156,7 +158,21 @@ def repo_files(root: Path) -> list[str]:
     return names
 
 
-PROPOSAL_RECORDS = "specs/model-sidecar/proposals/"
+def kit_values(section: str, keys: set[str]) -> dict:
+    """The table ``[section]`` of ``kit.toml`` in the repository root, or {} when there is no file."""
+    path = Path(__file__).resolve().parents[1] / "kit.toml"
+    if not path.is_file():
+        return {}
+    with path.open("rb") as file:
+        table = tomllib.load(file).get(section, {})
+    unknown = sorted(set(table) - keys)
+    if unknown:
+        raise SystemExit(f"kit.toml [{section}]: unknown keys: {', '.join(unknown)}")
+    return table
+
+
+# The folders of frozen byte copies, from kit.toml. Their links name the files as they were then.
+SKIPPED_FOLDERS: tuple[str, ...] = tuple(kit_values("check_links", {"skipped_folders"}).get("skipped_folders", []))
 
 
 def markdown_files(root: Path) -> list[Path]:
@@ -166,8 +182,7 @@ def markdown_files(root: Path) -> list[Path]:
         parts = rel.split("/")
         if not rel.endswith(".md") or not (root / rel).is_file():
             continue
-        # A proposal record is a frozen byte copy of a bundle. Its links name the spec as it was then.
-        if rel.startswith(PROPOSAL_RECORDS) and rel != PROPOSAL_RECORDS + "README.md":
+        if any(rel.startswith(folder) and rel != folder + "README.md" for folder in SKIPPED_FOLDERS):
             continue
         if rel.startswith(("specs/", "notes/", ".claude/skills/")):
             files.append(root / rel)

@@ -1,9 +1,10 @@
-"""Every relative link in each `AGENTS.md`, `decisions/`, `specs/`, `notes/` and `.claude/skills/` resolves, except in the frozen proposal records."""
+"""Every relative link in each `AGENTS.md`, `decisions/`, `specs/`, `notes/` and `.claude/skills/` resolves, except in the skipped folders."""
 
 import shutil
 import subprocess
 from pathlib import Path
 
+import check_links
 import pytest
 from check_links import anchors, check_file, github_slug, links, markdown_files
 
@@ -123,8 +124,9 @@ def test_decision_logs_in_any_folder_are_checked_and_pinned(tmp_path: Path) -> N
         ]
 
 
-def test_proposal_records_are_skipped(tmp_path: Path) -> None:
-    records = tmp_path / "specs" / "model-sidecar" / "proposals"
+def test_the_skipped_folders_are_skipped_except_their_readme(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(check_links, "SKIPPED_FOLDERS", ("specs/records/",))
+    records = tmp_path / "specs" / "records"
     (records / "slug").mkdir(parents=True)
     for doc in (records / "README.md", records / "slug" / "proposal.md"):
         doc.write_text("[gone](gone.md)\n", encoding="utf-8")

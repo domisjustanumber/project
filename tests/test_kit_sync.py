@@ -19,13 +19,12 @@ PROJECT = Path(__file__).resolve().parents[1]
 KIT = PROJECT / "agents-and-adr-process"
 BOOTSTRAP = KIT / "bootstrap"
 VALUES = {
-    "DEFAULT_BRANCH": "development",
+    "DEFAULT_BRANCH_TEXT": "upstream `development`",
     "AREAS": "the code, the CI",
     "NORMATIVE_DOCS": "the specs in `specs/`",
     "SIBLING_PATH": "../skellyfileformat/spec/",
     "SECRET_SCAN_BRANCHES": "[main, development]",
     "PYTHON_VERSION": "3.13.18",
-    "UV_VERSION": "0.13.7",
 }
 # Repositories that use the kit but are not in repos.toml.
 OTHER_REPOS = ("skellycertify", "skellyfileformat", "OpenMMLab-Exporter")
@@ -141,7 +140,20 @@ class KitSyncTests(unittest.TestCase):
         self.assertEqual(self.snapshot(), before)
         workflow = (self.repo / ".github/workflows/secrets.yml").read_text(encoding="utf-8")
         self.assertIn(f"branches: {VALUES['SECRET_SCAN_BRANCHES']}", workflow)
-        self.assertNotIn(placeholder("DEFAULT_BRANCH"), (self.repo / ".claude/skills/change-decision-log/SKILL.md").read_text(encoding="utf-8"))
+        skill = (self.repo / ".claude/skills/change-decision-log/SKILL.md").read_text(encoding="utf-8")
+        self.assertIn(f"Until a commit is on {VALUES['DEFAULT_BRANCH_TEXT']}, cite", skill)
+
+    def test_pull_keeps_the_line_ends_of_a_file(self):
+        """A CRLF working file stays CRLF, also when git converts the line ends (core.autocrlf)."""
+        agents = self.repo / "AGENTS.md"
+        agents.write_bytes(agents.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
+        self.edit(self.kit_file("bootstrap/AGENTS.md"), "Use short sentences.", "Use short sentences. Use short words.")
+        self.commit_kit("change")
+        self.pull()
+        data = agents.read_bytes()
+        self.assertIn(b"Use short words.", data)
+        self.assertEqual(data.count(b"\n"), data.count(b"\r\n"))
+        self.assertEqual(self.check_errors(), [])
 
     def test_a_copy_filled_in_by_hand_takes_the_kit_with_no_change(self):
         self.make_repo(fill_by_hand=True)
@@ -185,15 +197,38 @@ class KitSyncTests(unittest.TestCase):
             "AGENTS.md",
             "Write the summary in the message text, not only in the tool description.\n",
             "Write the summary in the message text, not only in the tool description.\n"
-            f"Name the branch `{VALUES['DEFAULT_BRANCH']}` when the call pushes.\n",
+            f"Name the branch {VALUES['DEFAULT_BRANCH_TEXT']} when the call pushes.\n",
         )
         before = self.kit_file("bootstrap/AGENTS.md").read_bytes()
         with self.assertRaisesRegex(ks.KitError, "give --fill NAME or --literal NAME"):
             self.propose()
         self.assertEqual(self.kit_file("bootstrap/AGENTS.md").read_bytes(), before)
-        self.propose(fill=["DEFAULT_BRANCH"])
+        self.propose(fill=["DEFAULT_BRANCH_TEXT"])
         kit_text = self.kit_file("bootstrap/AGENTS.md").read_text(encoding="utf-8")
-        self.assertIn(f"Name the branch `{placeholder('DEFAULT_BRANCH')}` when the call pushes.", kit_text)
+        self.assertIn(f"Name the branch {placeholder('DEFAULT_BRANCH_TEXT')} when the call pushes.", kit_text)
+
+    def test_propose_keeps_a_placeholder_in_a_paragraph_that_is_wrapped_again(self):
+        old = (
+            f"[`open-work.md`](decisions/open-work.md) before you change {VALUES['AREAS']} or these instructions.\n"
+            "For a task in a module with a log, also read the `decisions/README.md` and the\n"
+        )
+        new = (
+            f"[`open-work.md`](decisions/open-work.md) first, before you change {VALUES['AREAS']} or these\n"
+            "instructions. For a task in a module with a log, also read the `decisions/README.md` and the\n"
+        )
+        self.edit("AGENTS.md", old, new)
+        self.propose()
+        kit_text = self.kit_file("bootstrap/AGENTS.md").read_text(encoding="utf-8")
+        self.assertIn(f"first, before you change {placeholder('AREAS')} or these\ninstructions.", kit_text)
+
+    def test_propose_refuses_a_citation_of_an_entry_of_the_repository(self):
+        self.edit(
+            "AGENTS.md",
+            "Write the summary in the message text, not only in the tool description.\n",
+            "Write the summary in the message text, not only in the tool description (ADR-VV4Q).\n",
+        )
+        with self.assertRaisesRegex(ks.KitError, "cites only the kit entry 0001; remove or replace ADR-VV4Q"):
+            self.propose()
 
     def test_pull_refuses_when_the_kit_and_the_local_text_both_changed(self):
         self.edit(self.kit_file("bootstrap/AGENTS.md"), "Use short sentences.", "Use short sentences. Kit change.")
@@ -286,6 +321,24 @@ class KitManifestTests(unittest.TestCase):
             for name, value in VALUES.items():
                 if len(value) > 8:
                     self.assertNotIn(value, text, f"{uid}: the value of {name} of a test repository")
+
+    def test_no_unit_cites_an_entry_other_than_0001(self):
+        for unit in self.units:
+            self.assertEqual(ks.entry_citations(self.texts[unit.id], unit.path), [], unit.id)
+
+    def test_gitleaks_allows_the_hashes_of_kit_toml(self):
+        config = tomllib.loads(self.texts[".gitleaks.toml#gitleaks-config"])
+        rows = [a for a in config["allowlists"] if a.get("paths") == ["^kit\\.toml$"]]
+        self.assertEqual(len(rows), 1)
+        self.assertRegex("0" * 64, rows[0]["regexes"][0])
+
+    def test_a_path_value_in_a_link_target_becomes_its_placeholder(self):
+        unfill = ks.Unfill({"SPEC": "specs/certify.md"})
+        kit = "Read [the spec](../../../" + placeholder("SPEC") + ")."
+        local = "Read [the spec](../../../specs/certify.md) first."
+        self.assertEqual(unfill.text(kit, local, "u")[0], "Read [the spec](../../../" + placeholder("SPEC") + ") first.")
+        with self.assertRaises(ks.KitError):
+            unfill.text("", "See ../specs/certify.md.", "u")
 
     def test_each_marker_block_of_a_kit_file_is_in_the_manifest(self):
         listed = {u.id for u in self.units}
