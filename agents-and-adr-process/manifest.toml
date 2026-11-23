@@ -143,6 +143,10 @@ kit = "bootstrap/gitignore-additions.txt"
 path = "AGENTS.md"
 name = "other-systems"
 
+[[block]]
+path = ".pre-commit-config.yaml"
+name = "other-systems-hook"
+
 [[file]]
 path = "tools/check_other_systems.py"
 

@@ -500,7 +500,7 @@ the value, in one line of text.
 
 | Table | Content |
 |---|---|
-| `[sync]` | `adopt`: only these unit IDs (default: all units). `skip`: the unit IDs that the repo does not take. `kit`: the path of the kit checkout. |
+| `[sync]` | `adopt`: only these unit IDs (default: all units). `skip`: the unit IDs that the repo does not take. A repo with no certify self-test can skip the other-systems rule: `AGENTS.md#other-systems`, `.pre-commit-config.yaml#other-systems-hook`, `tools/check_other_systems.py`, `tools/tests/test_other_systems.py` and `.claude/skills/verify-on-other-systems/SKILL.md`. `kit`: the path of the kit checkout. |
 | `[values]` | The value of each placeholder |
 | `[check_decision_log]`, `[check_private_data]`, `[check_links]`, `[check_camera_media]` | The values of each tool. The docstring of the tool lists them. Keep each table, also when it is empty: `tools/kit_config.py` stops a tool when its table is missing, when a key is unknown, or when a value has the wrong type. The default of `golden_paths` allows no golden file. |
 | `[kit]` | `pull` and `propose` write it: the kit commit, the SHA-256 of `[values]` and of the filled text of each unit at that commit, and each local change that waits for the kit. Do not edit it. |

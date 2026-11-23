@@ -12,10 +12,6 @@ result.
   `tools/sync_bootstrap_kit.py` and takes `kit_sync.py`. skellyspecs, freemocap and skellycertify
   take the kit when they choose. Then the section "Keep the kit current" of the kit README goes
   ([ADR-B1QZ](entries/B1QZ-two-way-kit-sync.md)).
-- **A hook of a unit that a repo skips.** The hook `other-systems` is in the block `local-hooks`
-  of `.pre-commit-config.yaml`. A repo that puts `tools/check_other_systems.py` in `skip` still
-  gets the hook, and the hook then fails. A fix can move each hook of an optional tool into a block
-  of its own.
 - **The module templates.** `module/` is not in `manifest.toml`. A repo copies it one time
   ([ADR-B1QZ](entries/B1QZ-two-way-kit-sync.md)).
 - **The kit tests in CI.** The workflow of this repo runs the unittest tests in `tests/`. It does not
