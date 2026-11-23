@@ -4,8 +4,9 @@ This file holds the open work of the [decision log](README.md) of the kit. Read 
 apply to your task. Delete an item when its work is done. The PR that closes an item records the
 result.
 
-- **The merge branch of the kit.** The kit branch `dom/kit-two-way-sync` is pushed to the fork. The
-  user did not choose the branch of freemocap/project that it merges to
+- **The merge branch of the kit.** For now the kit work merges into `dom/agents-and-adr-kit`
+  (user, 2026-11-23: "everything gets merged into dom/agents-and-adr-kit for now"). The branch
+  of freemocap/project that `dom/agents-and-adr-kit` merges to is not chosen
   ([ADR-B1QZ](entries/B1QZ-two-way-kit-sync.md)).
 - **Who proposes the other-systems rule.** skellycam has the rule "other systems only through
   certify" in kit form. The user did not decide who runs `propose` into the kit after the review
