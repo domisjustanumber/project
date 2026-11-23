@@ -3,10 +3,13 @@
 
 Usage::
 
-    python tools/check_private_data.py [ROOT]
+    python tools/check_private_data.py [ROOT]            # each file of the repo
+    python tools/check_private_data.py --files FILE ...  # the given files, as the pre-commit hook gives them
 
 The tool reads each text file that git tracks, and each new file that git does not ignore. It skips
-generated lock files. It reports:
+generated lock files and Adobe Illustrator files (``SKIPPED_SUFFIXES``). The pre-commit hook uses
+``--files``, so that a finding in an unrelated file does not stop a commit. A run without
+``--files``, also the doc test in CI, reports each finding of the repo. It reports:
 
 - an absolute path in a user folder (``C:\\Users\\<name>``, ``/home/<name>``, ``/Users/<Name>``);
 - an email address that is not on the allowlist. The allowlist keeps ``noreply@anthropic.com``, so
@@ -17,31 +20,64 @@ generated lock files. It reports:
   comment). Use it for a hostname or a user name. Git must ignore it: a tracked list publishes
   the terms.
 
-A placeholder such as ``C:\\Users\\<you>`` or ``/home/$USER`` is not reported. Standard library only.
+A placeholder such as ``C:\\Users\\<you>`` or ``/home/$USER`` or ``/home/user`` is not reported.
+
+The table ``[check_private_data]`` of ``kit.toml`` in the repository root holds the values of the
+repository. ``allowed_emails`` adds addresses to the allowlist, for example the public contact
+address of the project. Each item of ``allowed_lines`` allows the findings of one line of one file:
+``path``, ``line`` (the line number), ``sha256`` (the SHA-256 of the exact text of that line, with no
+line end) and ``reason``. A finding passes only when all three match, so an edited or moved line is
+checked again. The value itself is never copied into ``kit.toml`` (decision 0001). A term of
+``.private-terms`` is reported also on an allowed line. Standard library only.
 """
 
 from __future__ import annotations
 
+import hashlib
 import re
 import shutil
 import subprocess
 import sys
+import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 
+
+def kit_values(section: str, keys: set[str]) -> dict:
+    """The table ``[section]`` of ``kit.toml`` in the repository root, or {} when there is no file."""
+    path = Path(__file__).resolve().parents[1] / "kit.toml"
+    if not path.is_file():
+        return {}
+    with path.open("rb") as file:
+        table = tomllib.load(file).get(section, {})
+    unknown = sorted(set(table) - keys)
+    if unknown:
+        raise SystemExit(f"kit.toml [{section}]: unknown keys: {', '.join(unknown)}")
+    return table
+
+
+KIT = kit_values("check_private_data", {"allowed_emails", "allowed_lines"})
+
 PRIVATE_TERMS = ".private-terms"
-# Generated lock files hold four-part package versions that look like private IP addresses.
-SKIPPED_SUFFIXES = (".lock",)
+# Generated lock files hold four-part package versions that look like private IP addresses, and
+# the addresses of package authors. An Adobe Illustrator file (.ai) is binary data.
+SKIPPED_SUFFIXES = (".lock", "package-lock.json", ".ai")
 
 # Reserved example domains (RFC 2606, RFC 6761), GitHub noreply addresses and public project contacts.
 ALLOWED_EMAIL_DOMAINS = re.compile(
     r"(?:^|\.)(?:example\.(?:com|org|net)|invalid|test|localhost|users\.noreply\.github\.com)$",
     re.IGNORECASE,
 )
-# Add the public contact address of the project here, for example the one in pyproject.toml.
-ALLOWED_EMAILS = {"noreply@anthropic.com"}
+# kit.toml adds the public contact address of the project, for example the one in pyproject.toml.
+ALLOWED_EMAILS = {"noreply@anthropic.com", *(a.lower() for a in KIT.get("allowed_emails", []))}
 
-PLACEHOLDER = r"(?![<{%$])"
+# (path, line number): (SHA-256 of the exact line text, reason), from kit.toml.
+ALLOWED_LINES: dict[tuple[str, int], tuple[str, str]] = {
+    (row["path"], row["line"]): (row["sha256"], row["reason"]) for row in KIT.get("allowed_lines", [])
+}
+
+# A user folder that starts with <, {, % or $, or that is the word "user", is a placeholder.
+PLACEHOLDER = r"(?![<{%$]|user(?![\w.-]))"
 PATTERNS = {
     "user path": re.compile(
         rf"[A-Za-z]:[\\/]+Users[\\/]+{PLACEHOLDER}[\w.-]+"
@@ -81,7 +117,12 @@ def repo_files(root: Path) -> list[Path]:
         capture_output=True,
         check=True,
     )
-    names = sorted({n for n in out.stdout.decode("utf-8").split("\0") if n})
+    return checked_files(root, out.stdout.decode("utf-8").split("\0"))
+
+
+def checked_files(root: Path, names: list[str]) -> list[Path]:
+    """The files of the repo-relative ``names`` that exist, without the skipped suffixes."""
+    names = sorted({n.replace("\\", "/") for n in names if n})
     return [
         root / n for n in names if (root / n).is_file() and not n.endswith(SKIPPED_SUFFIXES)
     ]
@@ -112,7 +153,9 @@ def scan_text(rel: str, text: str, terms: list[str]) -> list[Finding]:
     findings = []
     lowered_terms = [(t, t.lower()) for t in terms]
     for number, line in enumerate(text.splitlines(), start=1):
-        for kind, pattern in PATTERNS.items():
+        allowed = ALLOWED_LINES.get((rel, number))
+        unchanged = allowed is not None and hashlib.sha256(line.encode("utf-8")).hexdigest() == allowed[0]
+        for kind, pattern in ({} if unchanged else PATTERNS).items():
             for match in pattern.finditer(line):
                 if kind == "email address" and is_allowed_email(match.group(0)):
                     continue
@@ -126,10 +169,11 @@ def scan_text(rel: str, text: str, terms: list[str]) -> list[Finding]:
     return findings
 
 
-def check(root: Path) -> list[Finding]:
+def check(root: Path, names: list[str] | None = None) -> list[Finding]:
+    """The findings in each file of the repo, or only in the repo-relative ``names``."""
     terms = private_terms(root)
     findings = []
-    for path in repo_files(root):
+    for path in repo_files(root) if names is None else checked_files(root, names):
         rel = path.relative_to(root).as_posix()
         if rel == PRIVATE_TERMS:
             continue
@@ -140,12 +184,14 @@ def check(root: Path) -> list[Finding]:
 
 
 def main(argv: list[str]) -> int:
-    root = Path(argv[1]).resolve() if len(argv) > 1 else Path.cwd()
-    findings = check(root)
+    names = argv[2:] if argv[1:2] == ["--files"] else None
+    root = Path(argv[1]).resolve() if names is None and len(argv) > 1 else Path.cwd()
+    findings = check(root, names)
     if findings:
         print("\n".join(str(f) for f in findings))
         return 1
-    print(f"private data: no findings ({len(repo_files(root))} files)")
+    count = len(repo_files(root) if names is None else checked_files(root, names))
+    print(f"private data: no findings ({count} files)")
     return 0
 
 

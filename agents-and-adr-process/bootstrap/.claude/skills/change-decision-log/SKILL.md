@@ -13,6 +13,7 @@ the rules for a change to a log.
 
 ## Steps
 
+<!-- kit:log-change-steps -->
 1. Scan the tables for an entry that already decides the question or holds the measurement.
 2. Get the ID of a new entry from `uv run python tools/check_decision_log.py --new`.
 3. Write the entry from [template.md](../../../decisions/template.md) in `entries/` of its log.
@@ -21,9 +22,11 @@ the rules for a change to a log.
    table of `README.md`. Each other status goes in `historical.md`.
 5. Apply the [Rules](#rules) to each status change, absorb and edit.
 6. Run `uv run python tools/check_decision_log.py`. It must print no error.
+<!-- /kit -->
 
 ## Rules
 
+<!-- kit:log-change-rules -->
 - The body of an entry that is not `proposed` changes only by four edits: a link or anchor repair, a
   typo that does not change the meaning, the redaction of private data, and a change of ID with the
   repair of its citations. Each edit adds `_Edited YYYY-MM-DD (#PR): <kind>._` at the end of the
@@ -35,15 +38,19 @@ the rules for a change to a log.
 - An entry in a commit that is not pushed to a remote can change in that commit, in each part. Make
   the correction and report it to the user. Do not write a new entry for it, and do not ask. The
   four edits apply from the first push.
-- An absorb document is one of these: the root or a nested `AGENTS.md`, the skills, {{NORMATIVE_DOCS, for example the spec or the
-  contract files}}, the Rules of the index with [template.md](../../../decisions/template.md), and the
-  docstring of a tool in `tools/` for the rules that it checks. A test in `tools/tests/` or in the
+- An absorb document is one of these: the root or a nested `AGENTS.md`, the skills, the normative
+  documents, the Rules of the index with [template.md](../../../decisions/template.md), and the
+  docstring of a tool in `tools/` for the rules that it checks. The normative documents of this
+  repository are these: {{NORMATIVE_DOCS}}. A test in `tools/tests/` or in the
   tests of the package is a tool here: its docstring states the rules that it checks.
   `pyproject.toml` is an absorb document for a rule that a test checks. Its `absorbed into` link
   stands beside the link of that test. An accepted entry is absorbed when the absorb
   documents together state all of its rules. Open work of the entry does not stop the absorb when
   `open-work.md` states that work in full. A link to the entry is not
   enough.
+- A normative document is binding text. Read each normative document that applies to your task.
+  Absorb an accepted entry into a normative document only after you check, entry by entry, that
+  the document states each rule of that entry.
 - Absorb at landing. The commit group that writes or lands an entry, or that writes the rules of an
   entry into the absorb documents, absorbs the entry in its last commit when the absorb documents
   state all of its rules. This applies in each log, in each skill and without a skill. If an absorb
@@ -82,7 +89,8 @@ the rules for a change to a log.
 - A commit that only makes a workflow, skill, template or tool copy agree with a landed entry
   cites that entry. It needs no entry of its own. A new rule is not a copy.
 - Put long evidence in a tracked file in `evidence/` of the log folder, and link to it. A PR that raises a limit
-  of `tools/check_decision_log.py` must add an entry.
+  in the table `[check_decision_log]` of `kit.toml` must add an entry.
+- Do not shorten the index row of an entry that you did not write.
 - An ID changes only on a `re-ID:` line of `tools/check_decision_log.py`, to the ID of a new `--new`
   run.
 - Until a commit is on `{{DEFAULT_BRANCH}}`, cite its PR number and the file path, not its SHA.
@@ -90,3 +98,4 @@ the rules for a change to a log.
   heading, an index row and a status line hold the bare ID. Cite a provisional entry of another repo
   by the repo name, the PR number and the slug. Do not edit a decided entry only to add or move the
   prefix or the link.
+<!-- /kit -->

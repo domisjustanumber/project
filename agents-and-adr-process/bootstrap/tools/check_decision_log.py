@@ -10,7 +10,10 @@ Usage::
 
 The tool reads each decision log in ``LOG_DIRS`` under ROOT (default: the current directory). The
 first log, ``LOG_DIR``, is the root log. A module log is a folder of a module, for example
-``server/decisions``. Each log has the Active and Proposed tables in its ``README.md``,
+``server/decisions``. The table ``[check_decision_log]`` of ``kit.toml`` in the repository root
+sets the values of the repository: ``module_logs`` (the module log folders), ``old_log_dirs``,
+``target_branch``, ``index_limit``, ``read_path_limit`` and ``last_unlimited_entry``. With no
+``kit.toml``, the defaults below apply. Each log has the Active and Proposed tables in its ``README.md``,
 the Evidence table in its ``evidence.md``, the Historical table in its ``historical.md`` and its entry files in ``ENTRIES`` (decision 0001). The
 Active table holds the ``accepted`` entries, and the Evidence table holds the ``evidence`` entries
 (decision 0001).
@@ -94,16 +97,36 @@ import shutil
 import subprocess
 import sys
 import time
+import tomllib
 from collections import Counter
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
 
+
+def kit_values(section: str, keys: set[str]) -> dict:
+    """The table ``[section]`` of ``kit.toml`` in the repository root, or {} when there is no file."""
+    path = Path(__file__).resolve().parents[1] / "kit.toml"
+    if not path.is_file():
+        return {}
+    with path.open("rb") as file:
+        table = tomllib.load(file).get(section, {})
+    unknown = sorted(set(table) - keys)
+    if unknown:
+        raise SystemExit(f"kit.toml [{section}]: unknown keys: {', '.join(unknown)}")
+    return table
+
+
+KIT = kit_values(
+    "check_decision_log",
+    {"module_logs", "old_log_dirs", "target_branch", "index_limit", "read_path_limit", "last_unlimited_entry"},
+)
+
 LOG_DIR = Path("decisions")
-# The root log first. Add the folder of each module log, relative to ROOT.
-LOG_DIRS = (LOG_DIR,)  # A step of the kit guide adds the module logs.
+# The root log first, then the folder of each module log, relative to ROOT.
+LOG_DIRS = (LOG_DIR, *(Path(p) for p in KIT.get("module_logs", [])))
 # A folder where a log was before a move. Only --new reads it, in other worktrees and on branches.
-OLD_LOG_DIRS: tuple[Path, ...] = ()
+OLD_LOG_DIRS: tuple[Path, ...] = tuple(Path(p) for p in KIT.get("old_log_dirs", []))
 # The folder of the entry files in each log. A log before the move to it had them in the log folder.
 ENTRIES = "entries"
 OPEN_WORK = "open-work.md"
@@ -112,14 +135,14 @@ EVIDENCE = "evidence.md"
 TEMPLATE = "template.md"
 NOT_ENTRIES = {"README.md", OPEN_WORK, HISTORICAL, EVIDENCE, TEMPLATE}
 SKILL = ".claude/skills/change-decision-log/SKILL.md"
-TARGET_BRANCH = "main"  # Step 3 of the kit guide sets the branch that PRs target.
+TARGET_BRANCH: str = KIT.get("target_branch", "main")  # The branch that PRs target.
 SKIPPED_BRANCHES = "refs/heads/backup/"
 
-INDEX_LIMIT = 14_000
+INDEX_LIMIT: int = KIT.get("index_limit", 14_000)
 OPEN_WORK_LIMIT = 20_000
 ENTRY_LIMIT = 6_000
-READ_PATH_LIMIT = 220_000
-LAST_UNLIMITED_ENTRY = 0
+READ_PATH_LIMIT: int = KIT.get("read_path_limit", 220_000)
+LAST_UNLIMITED_ENTRY: int = KIT.get("last_unlimited_entry", 0)
 WARN_FRACTION = 0.8
 DECISION_CELL_LIMIT = 160
 

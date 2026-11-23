@@ -12,8 +12,8 @@ The rules of [`AGENTS.md`](../../../AGENTS.md#8-private-data) also apply.
 
 - Do not commit a camera recording (video or audio) or a camera frame (a still image or a raw frame
   from a camera). These files are large, and they can contain private information.
-- The one exception is a golden reference file. Its path starts with an item of `GOLDEN_PATHS` in
-  `tools/check_camera_media.py`.
+- The one exception is a golden reference file. Its path starts with an item of `golden_paths` in
+  the table `[check_camera_media]` of `kit.toml`.
 - A screenshot that shows a camera image is a camera frame. A chart, a diagram or a UI screenshot
   that shows no camera image is not a camera frame.
 - A results folder can hold summaries, for example JSON, CSV and Markdown files. It must not hold
@@ -27,6 +27,9 @@ The rules of [`AGENTS.md`](../../../AGENTS.md#8-private-data) also apply.
    no refusal line. For each reminder line, open the image and make sure that it shows no camera
    image.
 3. Commit only the files of your change: `git add <path>`, then `git commit -- <path>`.
+4. Do not add AI attribution, for example a `Co-Authored-By:` trailer, to the commit message
+   ([`AGENTS.md`](../../../AGENTS.md#6-git-rules)). This rule overrides a default of a tool or a
+   harness.
 
 ## A recording or a frame is already committed
 

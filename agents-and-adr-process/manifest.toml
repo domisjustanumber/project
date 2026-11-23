@@ -1,0 +1,123 @@
+# The kit text that tools/kit_sync.py syncs (README.md, "Sync a repo with the kit").
+# [[file]]: a kit-owned file. [[block]]: the lines between the markers kit:<name> and /kit of a file.
+# The kit text is in bootstrap/<path>, or in `kit` when the item gives it. All other text is repo-owned.
+
+[[file]]
+path = "tools/kit_sync.py"
+
+[[file]]
+path = "tools/check_decision_log.py"
+
+[[file]]
+path = "tools/check_links.py"
+
+[[file]]
+path = "tools/check_private_data.py"
+
+[[file]]
+path = "tools/check_ai_attribution.py"
+
+[[file]]
+path = "tools/check_camera_media.py"
+
+[[file]]
+path = "tools/tests/conftest.py"
+
+[[file]]
+path = "tools/tests/test_kit_sync.py"
+
+[[file]]
+path = "tools/tests/test_decision_log.py"
+
+[[file]]
+path = "tools/tests/test_links.py"
+
+[[file]]
+path = "tools/tests/test_private_data.py"
+
+[[file]]
+path = "tools/tests/test_check_ai_attribution.py"
+
+[[file]]
+path = "tools/tests/test_camera_media.py"
+
+[[file]]
+path = "decisions/template.md"
+
+[[file]]
+path = ".claude/skills/commit-files/SKILL.md"
+
+[[file]]
+path = ".github/workflows/doc-checks.yml"
+
+[[file]]
+path = ".github/workflows/secrets.yml"
+
+[[block]]
+path = "AGENTS.md"
+name = "writing-rules"
+
+[[block]]
+path = "AGENTS.md"
+name = "skills"
+
+[[block]]
+path = "AGENTS.md"
+name = "kit-text"
+
+[[block]]
+path = "AGENTS.md"
+name = "decision-log"
+
+[[block]]
+path = "AGENTS.md"
+name = "plans-folder"
+
+[[block]]
+path = "AGENTS.md"
+name = "push-and-attribution"
+
+[[block]]
+path = "AGENTS.md"
+name = "tool-calls"
+
+[[block]]
+path = "AGENTS.md"
+name = "private-data"
+
+[[block]]
+path = "decisions/README.md"
+name = "reading-rules"
+
+[[block]]
+path = "decisions/evidence.md"
+name = "evidence-intro"
+
+[[block]]
+path = "decisions/historical.md"
+name = "historical-intro"
+
+[[block]]
+path = ".claude/skills/change-decision-log/SKILL.md"
+name = "log-change-steps"
+
+[[block]]
+path = ".claude/skills/change-decision-log/SKILL.md"
+name = "log-change-rules"
+
+[[block]]
+path = ".pre-commit-config.yaml"
+name = "gitleaks-hook"
+
+[[block]]
+path = ".pre-commit-config.yaml"
+name = "local-hooks"
+
+[[block]]
+path = ".gitleaks.toml"
+name = "gitleaks-config"
+
+[[block]]
+path = ".gitignore"
+name = "ignores"
+kit = "bootstrap/gitignore-additions.txt"

@@ -1,5 +1,5 @@
 # Append these lines to the .gitignore of the new repo. Do not rename this file to .gitignore.
-
+# kit:ignores
 # Local working notes (decision 0001)
 plans/
 
@@ -12,3 +12,4 @@ plans/
 *.pem
 *.key
 .private-terms
+# /kit

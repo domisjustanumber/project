@@ -167,7 +167,7 @@ def test_an_absorbed_status_links_pyproject_only_beside_a_test(tmp_path: Path) -
                 row(1, "absorbed into [`pyproject.toml`](../pyproject.toml)"),
                 row(2, "absorbed into `pyproject.toml`, `tools/x.py`", "y"),
                 row(3, "absorbed into [`pyproject.toml`](../pyproject.toml), [`t`](../tools/tests/test_pins.py)", "z"),
-                row(4, "absorbed into `pyproject.toml`, `skellytracker/tests/sub/test_a.py`", "w"),
+                row(4, "absorbed into `pyproject.toml`, `package/tests/sub/test_a.py`", "w"),
             ]
         ),
         entries={"0001-x.md": "", "0002-y.md": "", "0003-z.md": "", "0004-w.md": ""},

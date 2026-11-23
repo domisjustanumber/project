@@ -4,17 +4,20 @@
 default_install_hook_types: [pre-commit, commit-msg, pre-push]
 default_stages: [pre-commit]
 repos:
+  # kit:gitleaks-hook
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.30.1
     hooks:
       - id: gitleaks
+  # /kit
   - repo: local
     hooks:
+      # kit:local-hooks
+      # Only the files of the commit. The doc test and CI check each file of the repo.
       - id: private-data
         name: private data
-        entry: uv run python tools/check_private_data.py
+        entry: uv run python tools/check_private_data.py --files
         language: system
-        pass_filenames: false
       # A camera recording or a camera frame in the files of the commit. Golden reference files pass.
       # The hook also prints a reminder for an image. The reminder does not stop the commit.
       - id: camera-media
@@ -44,3 +47,4 @@ repos:
         language: system
         stages: [commit-msg]
         verbose: true
+      # /kit

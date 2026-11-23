@@ -10,12 +10,15 @@ permissions:
 
 jobs:
   kit-tests:
-    name: Kit decision log, module template and tools
+    name: Kit decision log, module template, tools and sync
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v5
-      # The kit tools use only the standard library and the git CLI; the runner's Python 3 is enough.
-      - run: python3 -m unittest discover -s tests -p test_agents_and_adr_kit.py -v
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # The kit tools use only the standard library and the git CLI. They need Python 3.13 or later.
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13.18"
+      - run: python -m unittest discover -s tests -p "test_*kit*.py" -v
       # No camera recording or camera frame in this repository. Only golden reference files pass.
-      - run: python3 agents-and-adr-process/bootstrap/tools/check_camera_media.py --all
+      - run: python agents-and-adr-process/bootstrap/tools/check_camera_media.py --all

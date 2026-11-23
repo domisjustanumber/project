@@ -17,7 +17,8 @@ Keep technical names, field names, values, formulas, code and YAML unchanged.
 | `AGENTS.md` | The root instructions file for coding agents |
 | `CLAUDE.md` | Imports this file. It has no other content. |
 | `decisions/` | Decision log ([`README.md`](decisions/README.md)) and its open work ([`open-work.md`](decisions/open-work.md)) |
-| `tools/` | The doc checks: `check_decision_log.py`, `check_links.py`, `check_private_data.py` and `check_camera_media.py`. Their tests are in `tools/tests/`. |
+| `tools/` | The doc checks: `check_decision_log.py`, `check_links.py`, `check_private_data.py` and `check_camera_media.py`, and the kit sync `kit_sync.py`. Their tests are in `tools/tests/`. |
+| `kit.toml` | The values of this repository for the tools, and the kit commit that it took ([section 4](#4-project-rules)) |
 | `plans/` | A local working folder. Git ignores it. |
 | `{{MODULE}}/` | {{MODULE_ROLE}}. Its `AGENTS.md` holds the rules for the work in it. Its log is in `{{MODULE}}/decisions/`. |
 | {{PATH}} | {{ROLE}} |
@@ -48,8 +49,8 @@ Do not depend on an activated virtual environment.
 Run `{{TEST_COMMAND, for example uv run pytest}}`.
 These tests must pass.
 Run `uv run pytest tools/tests` to run only the doc checks.
-The doc checks test the decision log, the relative links, the private-data rule and the camera-media
-rule.
+The doc checks test the decision log, the relative links, the private-data rule, the camera-media
+rule and the kit text.
 Report each new test failure to the user.
 Fix the failures of one root cause in one PR.
 
@@ -59,8 +60,23 @@ Fix the failures of one root cause in one PR.
 one instruction on each line.}}
 Do not change code that your task does not need.
 
+<!-- kit:kit-text -->
+Some text of this repository comes from the agents and ADR kit of freemocap/project. This is each
+file and each block that `kit.toml` lists in `[kit.hashes]`. A block is the text between the lines
+`<!-- kit:<name> -->` and `<!-- /kit -->`. Do not delete the marker lines.
+`uv run pytest tools/tests` runs `tools/kit_sync.py check`. It fails when such a text is not the
+kit text.
+To change such a text, add a decision entry, change the text, and run
+`uv run python tools/kit_sync.py propose`. It writes the change into the kit checkout in
+`../project`. The kit change then needs its own PR to freemocap/project. Its commit subject cites
+the entry of this repository.
+To take a newer kit, run `uv run python tools/kit_sync.py pull`. Put the kit commit in the body of
+the commit that takes it.
+<!-- /kit -->
+
 ## 5. Decision Log
 
+<!-- kit:decision-log -->
 Read [`decisions/README.md`](decisions/README.md) and
 [`open-work.md`](decisions/open-work.md) before you change {{AREAS}} or these instructions.
 For a task in a module with a log, also read the `decisions/README.md` and the
@@ -69,7 +85,7 @@ An entry goes in the log of a module only when each file that its Decision secti
 changes is in that module.
 All other entries go in the root log, also each case that you cannot decide.
 A new module log needs the approval of the user. The PR that adds it also adds its folder to
-`LOG_DIRS` of `tools/check_decision_log.py`.
+`module_logs` in the table `[check_decision_log]` of `kit.toml`.
 Each log has a `README.md` with an Active table, a Proposed table and `## Open work`, an
 `evidence.md` with the Evidence table, a `historical.md`, an `open-work.md` and its entry files in
 `entries/`. The Rules and `template.md` are only in the root log.
@@ -97,6 +113,7 @@ A commit message cannot hold a working link. In the commit body, write `ADR-<ID>
 Cite an entry of another repository with the repository name and `ADR-<ID>`. Also link it with a
 full-SHA permalink when the entry is on the default branch of that repository
 (see the [Rules](.claude/skills/change-decision-log/SKILL.md#rules)).
+<!-- /kit -->
 
 ## 6. Git Rules
 
@@ -119,12 +136,15 @@ full-SHA permalink when the entry is on the default branch of that repository
 
 ## 7. Tool Calls
 
+<!-- kit:tool-calls -->
 Before a tool call that needs user permission, write a one-line summary of the call.
 The summary must tell what the call does and what it changes.
 Write the summary in the message text, not only in the tool description.
+<!-- /kit -->
 
 ## 8. Private Data
 
+<!-- kit:private-data -->
 This repository is public, or it can become public. Git history is permanent
 ([ADR-0001](decisions/entries/0001-decision-log-agents-md-and-private-data.md)).
 Do not write these in a tracked file, a commit message or a PR body:
@@ -132,14 +152,14 @@ Do not write these in a tracked file, a commit message or a PR body:
 - a credential, a token, a password or a private key;
 - an absolute path in a user folder;
 - a hostname or a user name in prose;
-- an email address that is not on the allowlist of `tools/check_private_data.py`;
+- an email address that is not on the allowlist of `tools/check_private_data.py` and `kit.toml`;
 - a private URL or a private IP address;
 - a raw dump of `env`, `pip list`, `nvidia-smi` or `docker inspect`.
 
 Do not commit a camera recording (video or audio) or a camera frame (a still image or a raw frame
 from a camera). These files are large, and they can contain private information. The one exception
-is a golden reference file: its path starts with an item of `GOLDEN_PATHS` in
-`tools/check_camera_media.py`. Load the [`commit-files`](.claude/skills/commit-files/SKILL.md)
+is a golden reference file: its path starts with an item of `golden_paths` in the table
+`[check_camera_media]` of `kit.toml`. Load the [`commit-files`](.claude/skills/commit-files/SKILL.md)
 skill before each commit.
 
 - A screenshot that shows a camera image is a camera frame. A chart, a diagram or a UI screenshot
@@ -148,7 +168,7 @@ skill before each commit.
   the media. Keep large media outside the repository.
 - To show a camera frame to the user, give its local path. Do not commit the frame.
 
-- Use paths relative to the repository, for example `../{{SIBLING_REPO}}/notes/`.
+- Use paths relative to the repository, for example `{{SIBLING_PATH}}`.
 - Give a measurement as a summary with its tool and its version.
 - A report field or a test fake can contain a hostname.
 - Text from `plans/` must obey these rules before it goes into a tracked file.
@@ -157,8 +177,11 @@ skill before each commit.
 - If you find private data in a tracked file, remove it with a redaction edit. Then tell the user,
   because git history keeps the data. Also revoke a leaked credential.
 - The pre-commit hook runs `gitleaks`, `tools/check_private_data.py` and
-  `tools/check_camera_media.py`. CI runs `gitleaks` on each push and PR. `.gitleaks.toml` holds the reviewed false positives.
+  `tools/check_camera_media.py` on the files of the commit. CI runs `gitleaks` on each push and PR.
+  `uv run pytest tools/tests` and CI run `tools/check_private_data.py` on each file of the
+  repository. `.gitleaks.toml` holds the reviewed false positives.
 - The commit-msg hook warns about AI attribution. If you are an AI agent and you see
   this warning, tell the user.
 - Turn on secret scanning and push protection for a private repository on the day that it becomes
   public.
+<!-- /kit -->

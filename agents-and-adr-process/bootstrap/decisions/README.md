@@ -39,6 +39,7 @@ The open work is in [open-work.md](open-work.md).
 
 ## Rules
 
+<!-- kit:reading-rules -->
 - Read the Active entries that apply to your task. Then you do not repeat a settled question. Before
   you make a measurement, scan the rows of `evidence.md` of each log, and read the entries that
   apply. Then you do not repeat a completed measurement. `evidence.md` and its entries are not in
@@ -52,3 +53,4 @@ The open work is in [open-work.md](open-work.md).
 - Before you add or change an entry, a status or a row of a table, load the skill
   [`change-decision-log`](../.claude/skills/change-decision-log/SKILL.md). It gives the rules for
   each change to a log.
+<!-- /kit -->

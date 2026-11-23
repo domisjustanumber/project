@@ -1,0 +1,36 @@
+# The values of this repository for the kit tools (decision 0001). This repository owns this file.
+# tools/kit_sync.py fills each placeholder of the kit text with a value of [values]. The check tools
+# read their tables. Each commented line gives the default.
+
+[sync]
+# adopt = ["AGENTS.md#writing-rules"]  # Only these unit IDs of the kit manifest. Default: all units.
+# skip = [".github/workflows/doc-checks.yml"]  # The unit IDs that this repository does not take.
+# kit = "../project"  # The path of the freemocap/project checkout.
+
+[values]
+DEFAULT_BRANCH = "main"  # The branch that PRs target.
+AREAS = "the code, the CI"  # What an agent must not change before it reads the decision log.
+NORMATIVE_DOCS = "none"  # The binding documents, for example "the specs in `specs/`".
+SIBLING_PATH = "../other-repo/notes/"  # A path relative to the repository, as an example in AGENTS.md.
+SECRET_SCAN_BRANCHES = "[main]"  # The branches of a PR that the secret scan checks.
+PYTHON_VERSION = "3.13.18"  # The Python of the doc checks in CI. At least 3.13.
+UV_VERSION = "0.13.7"  # The uv of the doc checks in CI. At least 14 days old.
+
+[check_decision_log]
+# module_logs = ["server/decisions"]  # The folder of each module log.
+# old_log_dirs = []  # A folder where a log was before a move.
+# target_branch = "main"  # The branch that PRs target. --new ranks the entry IDs with it.
+# index_limit = 14_000  # A PR that raises a limit must add an entry.
+# read_path_limit = 220_000
+# last_unlimited_entry = 0
+
+[check_private_data]
+# allowed_emails = ["contact@example.org"]  # The public contact address of the project.
+# [[check_private_data.allowed_lines]]  # A reviewed line: path, line, the SHA-256 of its text, reason.
+# path = "ui/credit.tsx"
+# line = 1
+# sha256 = "<64 hex characters>"
+# reason = "upstream author credit"
+
+[check_camera_media]
+# golden_paths = ["golden/"]  # The path prefixes of the golden reference files. [] allows none.

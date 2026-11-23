@@ -6,32 +6,36 @@ to copy. The kit is in [`bootstrap/`](bootstrap/). Its folders have the layout o
 each file goes to the same relative path.
 
 The rules come from the skellytracker decision log: skellytracker ADR-2XW6 and the entries that it
-restates. The kit has their final form. It does not have their history.
+restates. The kit has their final form. It does not have their history. A repo that uses the kit
+takes the changes of the kit, and it gives its own changes back, with `tools/kit_sync.py`
+([Sync a repo with the kit](#sync-a-repo-with-the-kit)).
 
 ## What the kit gives
 
 | Kit file | Copy to | Action |
 |---|---|---|
-| [`AGENTS.md`](bootstrap/AGENTS.md) | `AGENTS.md` | Fill in each `{{...}}` |
+| [`AGENTS.md`](bootstrap/AGENTS.md) | `AGENTS.md` | Fill in each `{{...}}` outside the kit blocks. Keep the marker lines. |
 | [`CLAUDE.md`](bootstrap/CLAUDE.md) | `CLAUDE.md` | Copy. Its only content is `@AGENTS.md`. |
-| [`decisions/README.md`](bootstrap/decisions/README.md) | the same path | Fill in each `{{...}}` |
+| [`decisions/README.md`](bootstrap/decisions/README.md) | the same path | Fill in each `{{...}}` outside the kit blocks. Keep the marker lines. |
 | [`decisions/evidence.md`](bootstrap/decisions/evidence.md), [`decisions/historical.md`](bootstrap/decisions/historical.md), [`decisions/template.md`](bootstrap/decisions/template.md) | the same paths | Copy |
 | [`decisions/open-work.md`](bootstrap/decisions/open-work.md) | the same path | Replace the example item, or delete it |
 | [`decisions/entries/0001-…`](bootstrap/decisions/entries/0001-decision-log-agents-md-and-private-data.md) | the same path | Fill in the date |
-| `tools/check_decision_log.py`, `tools/check_links.py`, `tools/check_private_data.py`, `tools/check_ai_attribution.py`, `tools/check_camera_media.py` | the same paths | Copy. Add the public contact address of the project to `ALLOWED_EMAILS`. Set `GOLDEN_PATHS` in `check_camera_media.py` to the folders of the golden reference files, or to `()`. |
-| `tools/tests/conftest.py` and the five `test_*.py` files | the same paths | Copy |
+| [`kit.toml`](bootstrap/kit.toml) | `kit.toml` | Fill in `[values]` and the tables of the tools, for example the public contact address of the project in `allowed_emails` and the folders of the golden reference files in `golden_paths` |
+| `tools/check_decision_log.py`, `tools/check_links.py`, `tools/check_private_data.py`, `tools/check_ai_attribution.py`, `tools/check_camera_media.py`, `tools/kit_sync.py` | the same paths | Copy. They read the values of the repo from `kit.toml`. |
+| `tools/tests/conftest.py` and the six `test_*.py` files | the same paths | Copy |
 | [`.claude/skills/commit-files/SKILL.md`](bootstrap/.claude/skills/commit-files/SKILL.md), [`.claude/skills/change-decision-log/SKILL.md`](bootstrap/.claude/skills/change-decision-log/SKILL.md) | the same paths | Copy |
 | `.pre-commit-config.yaml`, `.gitleaks.toml` | the same paths | Copy |
-| `.github/workflows/secrets.yml`, `.github/workflows/doc-checks.yml` | the same paths | Copy. In `secrets.yml`, change `branches: [main]` if PRs target a different branch. |
-| [`gitignore-additions.txt`](bootstrap/gitignore-additions.txt) | `.gitignore` | Append the lines. Do not copy the file as `.gitignore`. |
+| `.github/workflows/secrets.yml`, `.github/workflows/doc-checks.yml` | the same paths | Copy. The first `pull` fills in their placeholders from `kit.toml`. |
+| [`gitignore-additions.txt`](bootstrap/gitignore-additions.txt) | `.gitignore` | Append the lines, also the marker lines. Do not copy the file as `.gitignore`. |
 | [`module/`](module/AGENTS.md): `AGENTS.md`, `CLAUDE.md`, `decisions/README.md`, `decisions/historical.md`, `decisions/open-work.md` | each module folder, for example `freemocap/` | Only for a repo with modules ([Modules and logs](#modules-and-logs)). Fill in each `{{...}}`. In `decisions/open-work.md`, replace the example item, or delete it. |
 
 The module template is in [`module/`](module/), not in `bootstrap/`, because it goes into a module
 folder, not into the repo root.
 
-The five tools use only the Python standard library and the git CLI. They count the decision log,
-check the links, scan the tracked files, check the commit message for AI attribution and refuse
-camera recordings and camera frames. Their tests run with `pytest`.
+The six tools use only the Python standard library and the git CLI. They need Python 3.13 or later.
+They count the decision log, check the links, scan the tracked files, check the commit message for
+AI attribution, refuse camera recordings and camera frames, and sync the kit text. Their tests run
+with `pytest`. [`manifest.toml`](manifest.toml) lists the kit text that `tools/kit_sync.py` syncs.
 
 ## Procedure
 
@@ -42,15 +46,17 @@ the user tells you to.
 
 1. Is the repo public now, or can it become public? Default: yes. The private-data rule applies in
    both cases.
-2. Which branch do PRs target? Default: `main`. The kit calls it `{{DEFAULT_BRANCH}}`.
+2. Which branch do PRs target? Default: `main`. The kit calls it `{{DEFAULT_BRANCH}}`. It is a value
+   in `kit.toml`.
 3. Which kinds of change go in separate PRs? Default: code, docs and CI.
 4. Which documents are normative, in addition to `AGENTS.md` and the skills? Examples: a spec, a
    contract file, an API reference. An entry is absorbed only when a normative document states all
-   of its rules.
+   of its rules. The answer is the value `NORMATIVE_DOCS` in `kit.toml`, or `none`.
 5. Does a sibling repo use the same decision-log rules? If yes, follow
    [Repos that share the rules](#repos-that-share-the-rules).
 6. Must the docs use ASD-STE100 Simplified Technical English? Default: yes. If no, delete the STE
-   rule (the writing-rules block) from `AGENTS.md`.
+   rule (the writing-rules block and its marker lines) from `AGENTS.md`, and put
+   `AGENTS.md#writing-rules` in `skip` of `kit.toml`.
 7. May the agent push to a remote without asking each time? Default: no.
 8. Does the repo have modules, for example `freemocap/` and `freemocap-ui/`? Default: no. A module is
    a folder with its own `AGENTS.md`. The kit also gives each module a decision log. A yes is the
@@ -88,8 +94,8 @@ If the repo has modules (question 8), do these steps for each module, for exampl
    the root `AGENTS.md`.
 4. If the module already had an `AGENTS.md`, merge the kit text into it by hand. The `CLAUDE.md` of
    the module must contain only `@AGENTS.md`.
-5. Add the folder of the module log to `LOG_DIRS` in `tools/check_decision_log.py`, for example
-   `LOG_DIRS = (LOG_DIR, Path("freemocap/decisions"), Path("freemocap-ui/decisions"))`.
+5. Add the folder of the module log to `module_logs` in the table `[check_decision_log]` of
+   `kit.toml`, for example `module_logs = ["freemocap/decisions", "freemocap-ui/decisions"]`.
 6. Fill in the `{{MODULE}}/` row of the table in section 1 of the root `AGENTS.md`, with one row for
    each module.
 
@@ -97,14 +103,22 @@ If the repo has no modules, delete the `{{MODULE}}/` row of that table.
 
 ### Step 3: Fill in the placeholders
 
-Each `{{NAME}}` is a placeholder. Replace it with the answer of the user or with project facts. When
-a placeholder is a rule that does not apply, delete the full line. Delete each line that holds only
-`<!-- kit:<name> -->` or `<!-- /kit -->`. These lines are for the maintainers of skellytracker.
-Then run:
+Each `{{NAME}}` is a placeholder. Put the value of each placeholder of a kit block or a kit file in
+`[values]` of `kit.toml`. Set `target_branch` in the table `[check_decision_log]` to the branch that
+PRs target (question 2). `--new` uses it to rank entry IDs. Then run:
 
 ```sh
-grep -rn "{{" AGENTS.md CLAUDE.md decisions/ tools/
-grep -n -e "<!-- kit:" -e "<!-- /kit" AGENTS.md
+python ../project/agents-and-adr-process/bootstrap/tools/kit_sync.py pull
+```
+
+It fills in the placeholders of the kit blocks and the kit files, and it writes the kit commit into
+`kit.toml`. Keep the lines `<!-- kit:<name> -->` and `<!-- /kit -->`: the sync needs them.
+
+Replace each other placeholder with the answer of the user or with project facts. When such a
+placeholder is a rule that does not apply, delete the full line. Then run:
+
+```sh
+grep -rn "{{" AGENTS.md CLAUDE.md decisions/ tools/ .github/ .claude/
 ```
 
 For a repo with modules, add the `AGENTS.md`, the `CLAUDE.md` and the `decisions/` folder of each
@@ -117,9 +131,6 @@ grep -rn "{{" AGENTS.md CLAUDE.md decisions/ tools/ \
 ```
 
 The commands must find nothing.
-
-Then set `TARGET_BRANCH` in `tools/check_decision_log.py` to the branch that PRs target
-(question 2). `--new` uses it to rank entry IDs.
 
 ### Step 4: Add the tools to the project
 
@@ -134,8 +145,10 @@ testpaths = ["tools/tests"]   # add the other test folders of the project
 ```
 
 Pin `pre-commit` to a release that is at least 14 days old. Check the date on PyPI. For a project
-that does not use Python, install Python 3.10 or later and `pytest` for the doc checks only. Then
-change each `uv run` command in `AGENTS.md`, `.pre-commit-config.yaml` and `doc-checks.yml`.
+that does not use Python, install Python 3.13 or later and `pytest` for the doc checks only. Then
+change each `uv run` command in `AGENTS.md`, `.pre-commit-config.yaml` and `doc-checks.yml`. A
+change in a kit block or a kit file is a local change: put the unit ID in `skip` of `kit.toml`, or
+propose a kit change.
 
 ### Step 5: Check
 
@@ -147,6 +160,7 @@ uv run python tools/check_decision_log.py
 uv run python tools/check_decision_log.py --new
 uv run python tools/check_private_data.py
 uv run python tools/check_camera_media.py --all
+uv run python tools/kit_sync.py check
 uv run pre-commit install
 uv run pre-commit run --all-files
 uv run pre-commit run --hook-stage pre-push --all-files
@@ -154,6 +168,12 @@ git check-ignore -v plans/x .private-terms .claude/settings.local.json
 ```
 
 The first `pre-commit` run downloads Go to build `gitleaks`. This can take some minutes.
+
+`pre-commit install` writes the hooks into the hooks folder of the clone. All worktrees of a clone
+share that folder. A clone with many worktrees can track hook scripts in `.githooks/` that run
+`pre-commit run --hook-stage <stage>`. Then each worktree that takes them runs
+`git config extensions.worktreeConfig true` and `git config --worktree core.hooksPath .githooks`
+(skellycam ADR-NMM1).
 
 ### Step 6: Tell the user about the GitHub settings
 
@@ -307,16 +327,16 @@ into them.
 
 | Limit | Characters |
 |---|---|
-| Index (`README.md`) | 14,000 |
+| Index (`README.md`) | 14,000 (`index_limit` in `kit.toml`) |
 | `open-work.md` | 20,000 |
 | Each entry, without its status paragraph | 6,000 |
-| Read path | 220,000 |
+| Read path | 220,000 (`read_path_limit` in `kit.toml`) |
 
 About 4 characters make one token. Put long evidence in a tracked file next to the entry, and link
 to it. Put the script that produced a measurement in `scripts/` of the log that holds its entry.
 Name the script in the Evidence section. Then a reader can run the measurement again. A PR that
 raises a limit must add an entry. To start the log in a repo that already has long entries, set
-`LAST_UNLIMITED_ENTRY` to the highest old entry number.
+`last_unlimited_entry` in `kit.toml` to the highest old entry number.
 
 ### Citations
 
@@ -346,9 +366,9 @@ module has its own `AGENTS.md` and its own decision log in `<module>/decisions/`
 - **Placement.** An entry goes in the log of a module only when each file that its Decision section
   names or changes is in that module. All other entries go in the root log. When you cannot decide,
   use the root log.
-- **A fixed list.** `LOG_DIRS` in `tools/check_decision_log.py` lists each log. The tool does not
-  search for logs, so a test copy of a log does not become a log. A new module log needs the
-  approval of the user. The PR that adds a module log adds its folder to `LOG_DIRS`.
+- **A fixed list.** `module_logs` in `kit.toml` lists each module log. The tool does not search for
+  logs, so a test copy of a log does not become a log. A new module log needs the approval of the
+  user. The PR that adds a module log adds its folder to `module_logs`.
 - **One ID space.** An ID is unique in all logs of the repo. A citation needs no module name, and an
   entry can move to a different log with no change of ID.
 - **Limits.** The limits of the index, the open work and an entry apply to each file. The read-path
@@ -378,10 +398,12 @@ it:
 
 - `tools/check_private_data.py` finds user-folder paths, email addresses, private IP addresses,
   tokens and the terms of the untracked file `.private-terms`. It skips lock files, because they
-  hold four-part versions that look like IP addresses.
+  hold four-part versions that look like IP addresses, and Adobe Illustrator files. The pre-commit
+  hook checks only the files of the commit. The doc test and CI check each file. `allowed_lines` in
+  `kit.toml` allows a reviewed line by its path, its line number and the SHA-256 of its text.
 - `tools/check_camera_media.py` refuses a camera recording or a camera frame in the files of a
   commit, by its extension and by its first bytes. The one exception is a golden reference file:
-  its path starts with an item of `GOLDEN_PATHS`. `--all` lists the tracked files that the rule
+  its path starts with an item of `golden_paths` in `kit.toml`. `--all` lists the tracked files that the rule
   refuses. The [`commit-files`](bootstrap/.claude/skills/commit-files/SKILL.md) skill gives the
   steps before a commit.
 - The `gitleaks` pre-commit hook scans each commit before it is made.
@@ -429,7 +451,80 @@ These pitfalls are already found. Do not repeat them.
   entries. The kit lets a `proposed` entry change instead.
 - The newest release of a tool can be too new to trust. Pin versions that are at least 14 days old.
 
+## Sync a repo with the kit
+
+A repo that uses the kit takes each change of the kit. It also gives its own changes of the kit text
+back to the kit. `tools/kit_sync.py` does both. The kit tools read the values of the repo from
+`kit.toml`, so each kit tool is the same file in each repo.
+
+### Kit text and repo text
+
+[`manifest.toml`](manifest.toml) lists the kit text. Each item is a unit:
+
+- **A file unit** is a file that is the same in each repo, for example `tools/check_links.py`. Its
+  ID is its path.
+- **A block unit** is the text between the lines `<!-- kit:<name> -->` and `<!-- /kit -->` of a
+  file, or between `# kit:<name>` and `# /kit` in a YAML, TOML or ignore file. Its ID is
+  `<path>#<name>`, for example `AGENTS.md#private-data`. Keep the marker lines in the repo.
+- All other text is repo text. The sync does not change it. Put a rule that only one repo needs in
+  repo text, after the block, not in the block.
+
+A value of a repo in a unit is a placeholder `{{NAME}}` in the kit. `[values]` of `kit.toml` gives
+the value, in one line of text.
+
+### `kit.toml`
+
+`kit.toml` is in the repo root. The repo owns it, except the table `[kit]` at its end.
+
+| Table | Content |
+|---|---|
+| `[sync]` | `adopt`: only these unit IDs (default: all units). `skip`: the unit IDs that the repo does not take. `kit`: the path of the kit checkout. |
+| `[values]` | The value of each placeholder |
+| `[check_decision_log]`, `[check_private_data]`, `[check_camera_media]` | The values of each tool. The docstring of the tool lists them. |
+| `[kit]` | `pull` and `propose` write it: the kit commit, the SHA-256 of the filled text of each unit at that commit, and each local change that waits for the kit. Do not edit it. |
+
+### Commands
+
+Run them in the repo root. The tool finds the kit in `../project`, or two folders up when the repo
+is in the `repos/` folder of this repository. `--kit PATH` gives another place.
+
+- `uv run python tools/kit_sync.py check` needs no kit checkout. The doc test
+  `tools/tests/test_kit_sync.py` runs it, so CI runs it. It fails when the text of a unit is not
+  the kit text of the commit in `kit.toml`, and is not a change that waits for the kit. A local run
+  with a kit checkout also prints a note when the kit has a newer text. The note does not fail.
+- `uv run python tools/kit_sync.py pull [SHA]` takes the kit at SHA. The default is the HEAD of the
+  kit checkout. For each unit, the tool compares the kit text of the commit in `kit.toml`, the kit
+  text at SHA and the local text. It writes the kit text where the local text did not change. It
+  keeps a local change where the kit did not change. It refuses when both changed, and when a unit
+  that has no hash differs from the kit. A copy of the kit file with its placeholders not filled in
+  is not a change. A refusal prints the difference and writes nothing. `--replace UNIT` writes the
+  kit text over the local text of that unit.
+- `uv run python tools/kit_sync.py propose [UNIT ...]` writes each local change into the working tree
+  of the kit checkout, with each value changed back to its placeholder. It never commits and never
+  pushes. It refuses when the kit HEAD changed the unit after the commit in `kit.toml`. Then run
+  `pull` first. A value in a changed line becomes its placeholder only when the same line of the kit
+  text has that placeholder at that place. In each other case the tool refuses. Then give
+  `--fill NAME` (a placeholder) or `--literal NAME` (text). `--new UNIT` adds a new unit to the
+  manifest. For a new block, first put its two marker lines into the kit file where the block goes.
+
+### The path of a change
+
+1. A decision entry in the repo where the change comes up.
+2. The change of the kit text in that repo, then `propose`. `check` passes there, because the change
+   waits for the kit.
+3. A PR to freemocap/project with the changed kit files. Its commit subject cites the entry, for
+   example `(skellycam ADR-K9B7)`. The user reviews it.
+4. `pull` in each repo that uses the kit. The body of that commit gives the kit commit. In the repo
+   of step 1, `pull` changes no text and removes the waiting change from `kit.toml`.
+
+[`tests/test_kit_sync.py`](../tests/test_kit_sync.py) of this repository tests `pull` and `propose`.
+It also checks that no unit holds the name of a repo, and that each placeholder of a unit has a
+value in the [`kit.toml`](bootstrap/kit.toml) template.
+
 ## Keep the kit current
+
+This section applies until skellytracker takes `tools/kit_sync.py`. Then `pull` and `propose`
+replace it.
 
 This section is for the maintainers of skellytracker (skellytracker ADR-P3NK). The tool and config
 files in `bootstrap/` are copies of the live files of skellytracker, with exact text edits that
