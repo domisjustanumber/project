@@ -10,8 +10,9 @@ GitHub `blob`, `tree` or `commit` link must pin a full 40-character SHA
 (decision 0001).
 
 The check covers each `AGENTS.md`, each folder named `decisions`, `.claude/skills/` and each folder
-of `doc_folders` in the table `[check_links]` of `kit.toml` in the repository root (default:
-`specs/` and `notes/`). It skips the files in each folder of `skipped_folders` of that table, for example a folder of frozen byte copies of proposal records.
+and each path of `doc_paths` in the table `[check_links]` of `kit.toml` in the repository root: a
+path that ends with `/` is a folder, each other path is one file, for example `README.md`
+(default: `specs/` and `notes/`). It skips the files in each folder of `skipped_folders` of that table, for example a folder of frozen byte copies of proposal records.
 It still checks the `README.md` of such a folder (decision 0001).
 """
 
@@ -172,9 +173,10 @@ def kit_values(section: str, keys: set[str]) -> dict:
     return table
 
 
-KIT = kit_values("check_links", {"doc_folders", "skipped_folders"})
-# The folders of docs that the check covers, from kit.toml. The skills are always covered.
-DOC_FOLDERS: tuple[str, ...] = (".claude/skills/", *KIT.get("doc_folders", ["specs/", "notes/"]))
+KIT = kit_values("check_links", {"doc_paths", "skipped_folders"})
+# The docs that the check covers, from kit.toml: a folder ends with /, each other path is a file.
+# The skills are always covered.
+DOC_PATHS: tuple[str, ...] = (".claude/skills/", *KIT.get("doc_paths", ["specs/", "notes/"]))
 # The folders of frozen byte copies, from kit.toml. Their links name the files as they were then.
 SKIPPED_FOLDERS: tuple[str, ...] = tuple(KIT.get("skipped_folders", []))
 
@@ -188,7 +190,7 @@ def markdown_files(root: Path) -> list[Path]:
             continue
         if any(rel.startswith(folder) and rel != folder + "README.md" for folder in SKIPPED_FOLDERS):
             continue
-        if rel.startswith(DOC_FOLDERS):
+        if any(rel == p or (p.endswith("/") and rel.startswith(p)) for p in DOC_PATHS):
             files.append(root / rel)
         # Hidden folders and the local plans/ folder hold no tracked AGENTS.md or decision log.
         elif not any(p.startswith(".") or p == "plans" for p in parts[:-1]) and (

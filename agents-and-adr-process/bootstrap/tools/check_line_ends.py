@@ -9,7 +9,9 @@ Each text file of each repository uses LF line ends, on each system. The line
 ``* text=auto eol=lf`` of ``.gitattributes`` makes git write LF into the index and into each
 working tree, also when ``core.autocrlf`` is set. The tool reads ``git ls-files --eol`` and
 reports each file whose index text has a CRLF line end (``i/crlf``) or mixed line ends
-(``i/mixed``). It exits 1 when it reports a file. A binary file is not reported. To repair the
+(``i/mixed``). It exits 1 when it reports a file. A binary file is not reported, and a path that
+``.gitattributes`` sets to ``-text`` is not reported: for example a golden file that a test
+compares byte for byte. Such a line must come after the kit block of ``.gitattributes``. To repair the
 index, run ``git add --renormalize .`` and commit the result by itself. The pre-commit hook runs
 the tool on the index of the commit, and the doc test runs it in CI. Standard library and the
 git CLI only.
@@ -36,7 +38,8 @@ def crlf_files(root: Path) -> list[str]:
     found = []
     for row in out.stdout.decode("utf-8").split("\0"):
         info, _, path = row.partition("\t")
-        if path and info.split()[0] in BAD:
+        fields = info.split()
+        if path and fields[0] in BAD and "attr/-text" not in fields:
             found.append(path)
     return sorted(found)
 

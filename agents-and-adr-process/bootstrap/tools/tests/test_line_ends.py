@@ -39,6 +39,9 @@ def test_crlf_and_mixed_files_are_reported_and_binary_files_are_not(tmp_path: Pa
     (tmp_path / "crlf.md").write_bytes(b"a\r\nb\r\n")
     (tmp_path / "mixed.md").write_bytes(b"a\r\nb\n")
     (tmp_path / "blob.bin").write_bytes(b"\0\r\n\0")
+    (tmp_path / ".gitattributes").write_bytes(b"golden/** -text\n")
+    (tmp_path / "golden").mkdir()
+    (tmp_path / "golden" / "frame.txt").write_bytes(b"a\r\nb\r\n")
     git(tmp_path, "add", "-A")
     assert cle.crlf_files(tmp_path) == ["crlf.md", "mixed.md"]
     assert cle.main(["check_line_ends.py", str(tmp_path)]) == 1

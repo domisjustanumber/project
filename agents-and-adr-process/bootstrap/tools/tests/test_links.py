@@ -124,12 +124,14 @@ def test_decision_logs_in_any_folder_are_checked_and_pinned(tmp_path: Path) -> N
         ]
 
 
-def test_the_doc_folders_of_kit_toml_are_covered(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setattr(check_links, "DOC_FOLDERS", (".claude/skills/", "model-sidecars/"))
+def test_the_doc_paths_of_kit_toml_are_covered(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(check_links, "DOC_PATHS", (".claude/skills/", "model-sidecars/", "README.md"))
+    (tmp_path / "README.md").write_text("[gone](gone.md)\n", encoding="utf-8")
+    (tmp_path / "OTHER.md").write_text("[gone](gone.md)\n", encoding="utf-8")
     for folder in ("model-sidecars", "specs"):
         (tmp_path / folder).mkdir()
         (tmp_path / folder / "doc.md").write_text("[gone](gone.md)\n", encoding="utf-8")
-    assert markdown_files(tmp_path) == [tmp_path / "model-sidecars" / "doc.md"]
+    assert markdown_files(tmp_path) == [tmp_path / "README.md", tmp_path / "model-sidecars" / "doc.md"]
 
 
 def test_the_skipped_folders_are_skipped_except_their_readme(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
