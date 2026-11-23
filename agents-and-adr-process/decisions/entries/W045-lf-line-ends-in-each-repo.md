@@ -42,3 +42,8 @@
 
 - `git status` marks a file that differs only by CRLF as modified. The refresh guard uses
   `git diff HEAD`, which compares the text after the rule.
+- `git diff HEAD` does not show a change of a file marked `--assume-unchanged` or
+  `--skip-worktree`. With only that guard, `--refresh` lost an edit behind `--assume-unchanged`, and
+  deleted a `--skip-worktree` file that `git checkout` then did not write (found by the skellycam
+  review, 2026-11-23). `--refresh` now refuses such a file, and it compares the content of each file
+  with the index blob (`git hash-object`) before it deletes the first one.
