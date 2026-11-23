@@ -27,7 +27,7 @@ VALUES = {
     "PYTHON_VERSION": "3.13.18",
 }
 # Repositories that use the kit but are not in repos.toml.
-OTHER_REPOS = ("skellycertify", "skellyfileformat", "OpenMMLab-Exporter")
+OTHER_REPOS = ("skellycertify", "skellyfileformat", "skellyspecs", "OpenMMLab-Exporter")
 
 
 def load(path, name):

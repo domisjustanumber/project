@@ -32,6 +32,7 @@ PYTHON_VERSION = "3.13.18"  # The Python of the doc checks in CI. At least 3.13.
 # reason = "upstream author credit"
 
 [check_links]
+# doc_folders = ["specs/", "notes/"]  # The folders of docs that the link check covers, with the skills.
 # skipped_folders = ["specs/records/"]  # Folders of frozen copies. Their README.md is still checked.
 
 [check_camera_media]
