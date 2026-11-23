@@ -143,8 +143,8 @@ class KitSyncTests(unittest.TestCase):
         skill = (self.repo / ".claude/skills/change-decision-log/SKILL.md").read_text(encoding="utf-8")
         self.assertIn(f"Until a commit is on {VALUES['DEFAULT_BRANCH_TEXT']}, cite", skill)
 
-    def test_pull_keeps_the_line_ends_of_a_file(self):
-        """A CRLF working file stays CRLF, also when git converts the line ends (core.autocrlf)."""
+    def test_pull_writes_lf_line_ends(self):
+        """Each repository uses LF line ends on each system. A CRLF working file that pull writes gets LF."""
         agents = self.repo / "AGENTS.md"
         agents.write_bytes(agents.read_bytes().replace(b"\r\n", b"\n").replace(b"\n", b"\r\n"))
         self.edit(self.kit_file("bootstrap/AGENTS.md"), "Use short sentences.", "Use short sentences. Use short words.")
@@ -152,7 +152,7 @@ class KitSyncTests(unittest.TestCase):
         self.pull()
         data = agents.read_bytes()
         self.assertIn(b"Use short words.", data)
-        self.assertEqual(data.count(b"\n"), data.count(b"\r\n"))
+        self.assertNotIn(b"\r\n", data)
         self.assertEqual(self.check_errors(), [])
 
     def test_a_copy_filled_in_by_hand_takes_the_kit_with_no_change(self):

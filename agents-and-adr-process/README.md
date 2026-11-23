@@ -21,10 +21,10 @@ takes the changes of the kit, and it gives its own changes back, with `tools/kit
 | [`decisions/open-work.md`](bootstrap/decisions/open-work.md) | the same path | Replace the example item, or delete it |
 | [`decisions/entries/0001-…`](bootstrap/decisions/entries/0001-decision-log-agents-md-and-private-data.md) | the same path | Fill in the date |
 | [`kit.toml`](bootstrap/kit.toml) | `kit.toml` | Fill in `[values]` and the tables of the tools, for example the public contact address of the project in `allowed_emails` and the folders of the golden reference files in `golden_paths` |
-| `tools/check_decision_log.py`, `tools/check_links.py`, `tools/check_private_data.py`, `tools/check_ai_attribution.py`, `tools/check_camera_media.py`, `tools/kit_sync.py` | the same paths | Copy. They read the values of the repo from `kit.toml`. |
-| `tools/tests/conftest.py` and the six `test_*.py` files | the same paths | Copy |
+| `tools/check_decision_log.py`, `tools/check_links.py`, `tools/check_private_data.py`, `tools/check_ai_attribution.py`, `tools/check_camera_media.py`, `tools/check_line_ends.py`, `tools/kit_sync.py` | the same paths | Copy. They read the values of the repo from `kit.toml`. |
+| `tools/tests/conftest.py` and the seven `test_*.py` files | the same paths | Copy |
 | [`.claude/skills/commit-files/SKILL.md`](bootstrap/.claude/skills/commit-files/SKILL.md), [`.claude/skills/change-decision-log/SKILL.md`](bootstrap/.claude/skills/change-decision-log/SKILL.md) | the same paths | Copy |
-| `.pre-commit-config.yaml`, `.gitleaks.toml` | the same paths | Copy |
+| `.pre-commit-config.yaml`, `.gitleaks.toml`, `.gitattributes` | the same paths | Copy. If the repo has a `.gitattributes`, put the kit block first in it. |
 | `.github/workflows/secrets.yml`, `.github/workflows/doc-checks.yml` | the same paths | Copy. The first `pull` fills in their placeholders from `kit.toml`. |
 | [`gitignore-additions.txt`](bootstrap/gitignore-additions.txt) | `.gitignore` | Append the lines, also the marker lines. Do not copy the file as `.gitignore`. |
 | [`module/`](module/AGENTS.md): `AGENTS.md`, `CLAUDE.md`, `decisions/README.md`, `decisions/historical.md`, `decisions/open-work.md` | each module folder, for example `freemocap/` | Only for a repo with modules ([Modules and logs](#modules-and-logs)). Fill in each `{{...}}`. In `decisions/open-work.md`, replace the example item, or delete it. |
@@ -32,9 +32,10 @@ takes the changes of the kit, and it gives its own changes back, with `tools/kit
 The module template is in [`module/`](module/), not in `bootstrap/`, because it goes into a module
 folder, not into the repo root.
 
-The six tools use only the Python standard library and the git CLI. They need Python 3.13 or later.
-They count the decision log, check the links, scan the tracked files, check the commit message for
-AI attribution, refuse camera recordings and camera frames, and sync the kit text. Their tests run
+The seven tools use only the Python standard library and the git CLI. They need Python 3.13 or
+later. They count the decision log, check the links, scan the tracked files, check the commit
+message for AI attribution, refuse camera recordings and camera frames, refuse CRLF line ends, and
+sync the kit text. Their tests run
 with `pytest`. [`manifest.toml`](manifest.toml) lists the kit text that `tools/kit_sync.py` syncs.
 
 ## Procedure
@@ -115,6 +116,12 @@ python ../project/agents-and-adr-process/bootstrap/tools/kit_sync.py pull
 It fills in the placeholders of the kit blocks and the kit files, and it writes the kit commit into
 `kit.toml`. Keep the lines `<!-- kit:<name> -->` and `<!-- /kit -->`: the sync needs them.
 
+Each repo uses LF line ends on each system. After the block of `.gitattributes` is in the repo,
+run `git add --renormalize .` one time, and commit the result by itself. In a repo whose index
+holds only LF, the commit has no change. Then each person makes the working tree again. In a
+worktree with no local change, `git rm -r --cached -q .` and then `git reset --hard` do this. Do
+not run them in a worktree with a local change: `git reset --hard` deletes it.
+
 Replace each other placeholder with the answer of the user or with project facts. When such a
 placeholder is a rule that does not apply, delete the full line. Then run:
 
@@ -162,6 +169,7 @@ uv run python tools/check_decision_log.py --new
 uv run python tools/check_private_data.py
 uv run python tools/check_camera_media.py --all
 uv run python tools/kit_sync.py check
+uv run python tools/check_line_ends.py
 uv run pre-commit install
 uv run pre-commit run --all-files
 uv run pre-commit run --hook-stage pre-push --all-files

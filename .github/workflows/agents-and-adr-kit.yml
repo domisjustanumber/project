@@ -22,3 +22,5 @@ jobs:
       - run: python -m unittest discover -s tests -p "test_*kit*.py" -v
       # No camera recording or camera frame in this repository. Only golden reference files pass.
       - run: python agents-and-adr-process/bootstrap/tools/check_camera_media.py --all
+      # Each text file of this repository has LF line ends in the index.
+      - run: python agents-and-adr-process/bootstrap/tools/check_line_ends.py

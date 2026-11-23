@@ -21,6 +21,9 @@ path = "tools/check_ai_attribution.py"
 path = "tools/check_camera_media.py"
 
 [[file]]
+path = "tools/check_line_ends.py"
+
+[[file]]
 path = "tools/tests/conftest.py"
 
 [[file]]
@@ -40,6 +43,9 @@ path = "tools/tests/test_check_ai_attribution.py"
 
 [[file]]
 path = "tools/tests/test_camera_media.py"
+
+[[file]]
+path = "tools/tests/test_line_ends.py"
 
 [[file]]
 path = "decisions/template.md"
@@ -64,6 +70,10 @@ name = "skills"
 [[block]]
 path = "AGENTS.md"
 name = "kit-text"
+
+[[block]]
+path = "AGENTS.md"
+name = "line-ends"
 
 [[block]]
 path = "AGENTS.md"
@@ -116,6 +126,10 @@ name = "local-hooks"
 [[block]]
 path = ".gitleaks.toml"
 name = "gitleaks-config"
+
+[[block]]
+path = ".gitattributes"
+name = "line-ends"
 
 [[block]]
 path = ".gitignore"

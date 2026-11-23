@@ -1,0 +1,3 @@
+# LF line ends in the index and in each working tree, on each system, also when core.autocrlf is
+# set. The kit block of agents-and-adr-process/bootstrap/.gitattributes has the same rule.
+* text=auto eol=lf

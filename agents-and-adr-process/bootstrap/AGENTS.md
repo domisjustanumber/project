@@ -17,7 +17,7 @@ Keep technical names, field names, values, formulas, code and YAML unchanged.
 | `AGENTS.md` | The root instructions file for coding agents |
 | `CLAUDE.md` | Imports this file. It has no other content. |
 | `decisions/` | Decision log ([`README.md`](decisions/README.md)) and its open work ([`open-work.md`](decisions/open-work.md)) |
-| `tools/` | The doc checks: `check_decision_log.py`, `check_links.py`, `check_private_data.py` and `check_camera_media.py`, and the kit sync `kit_sync.py`. Their tests are in `tools/tests/`. |
+| `tools/` | The doc checks: `check_decision_log.py`, `check_links.py`, `check_private_data.py`, `check_camera_media.py` and `check_line_ends.py`, and the kit sync `kit_sync.py`. Their tests are in `tools/tests/`. |
 | `kit.toml` | The values of this repository for the tools, and the kit commit that it took ([section 4](#4-project-rules)) |
 | `plans/` | A local working folder. Git ignores it. |
 | `{{MODULE}}/` | {{MODULE_ROLE}}. Its `AGENTS.md` holds the rules for the work in it. Its log is in `{{MODULE}}/decisions/`. |
@@ -50,7 +50,7 @@ Run `{{TEST_COMMAND, for example uv run pytest}}`.
 These tests must pass.
 Run `uv run pytest tools/tests` to run only the doc checks.
 The doc checks test the decision log, the relative links, the private-data rule, the camera-media
-rule and the kit text.
+rule, the line ends and the kit text.
 Report each new test failure to the user.
 Fix the failures of one root cause in one PR.
 
@@ -72,6 +72,13 @@ To change such a text, add a decision entry, change the text, and run
 the entry of this repository.
 To take a newer kit, run `uv run python tools/kit_sync.py pull`. Put the kit commit in the body of
 the commit that takes it.
+<!-- /kit -->
+
+<!-- kit:line-ends -->
+Each text file uses LF line ends, on each system. The kit block of `.gitattributes` makes git
+write LF, also when `core.autocrlf` is set. Do not change that block.
+`tools/check_line_ends.py` fails a commit and CI when the index holds a CRLF line end.
+To repair the index, run `git add --renormalize .` and commit the result by itself.
 <!-- /kit -->
 
 ## 5. Decision Log

@@ -51,6 +51,8 @@ commit taken; ``[kit.hashes]``, the SHA-256 of the filled text of each unit at t
 The tool finds the kit checkout with ``--kit PATH``, then ``kit`` in ``[sync]``, then ``../project``,
 or two folders up when this repository is in the ``repos/`` folder of that checkout.
 
+The tool writes LF line ends into each file that it writes. It reads CRLF as LF.
+
 Exit codes: 0 for a pass, 1 for a failure or a refusal, 2 for a usage error. Standard library and
 the git CLI only. Python 3.13 or later.
 """
@@ -151,15 +153,14 @@ def unit_text(text: str | None, unit: Unit, where: str) -> str | None:
 
 
 def put_unit(text: str | None, unit: Unit, new: str, where: str) -> str:
-    """The text of the file with the new text of the unit. The file keeps its line ends."""
+    """The text of the file with the new text of the unit, with LF line ends."""
     if not unit.block:
-        return new.replace("\n", "\r\n") if text is not None and "\r\n" in text else new
+        return norm(new)
     assert text is not None
     lines = norm(text).split("\n")
     start, end = blocks(text, where)[unit.block]
-    lines[start:end] = new.split("\n") if new else []
-    joined = "\n".join(lines)
-    return joined.replace("\n", "\r\n") if "\r\n" in text else joined
+    lines[start:end] = norm(new).split("\n") if new else []
+    return "\n".join(lines)
 
 
 def read_file(path: Path) -> str | None:
@@ -168,8 +169,9 @@ def read_file(path: Path) -> str | None:
 
 
 def write_file(path: Path, text: str) -> None:
+    """Write the text with LF line ends: each repository uses LF on each system."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(text, encoding="utf-8", newline="")
+    path.write_text(norm(text), encoding="utf-8", newline="\n")
 
 
 # Values and placeholders.
