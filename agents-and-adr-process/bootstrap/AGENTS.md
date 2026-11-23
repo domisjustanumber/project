@@ -129,7 +129,7 @@ Add one entry for each new decision or measurement.
 Get its ID from `uv run python tools/check_decision_log.py --new`.
 End each commit subject that adds or changes an entry with `(ADR-<ID>)`.
 Cite each entry as a Markdown link with `ADR-<ID>` as the link text, in upper case, for example
-[ADR-0001](decisions/entries/0001-decision-log-agents-md-and-private-data.md).
+{{RULES_ENTRY_LINK}}.
 This rule applies to each text that you write: a tracked file, a plan, a PR body and a reply to the
 user. In a reply or a plan, the path is relative to the repository root or to the file.
 A commit message cannot hold a working link. In the commit body, write `ADR-<ID>` with no link.
@@ -143,7 +143,7 @@ full-SHA permalink when the entry is on the default branch of that repository
 <!-- kit:plans-folder -->
 - `plans/` is a local working folder. Git ignores it. Do not commit it. Do not cite or link to
   `plans/`, or cite the content of a plan
-  ([ADR-0001](decisions/entries/0001-decision-log-agents-md-and-private-data.md)).
+  ({{RULES_ENTRY_LINK}}).
   <!-- /kit -->
   <!-- kit:push-and-attribution -->
 - Do not push to a git remote without the approval of the user. One approval for a PR covers its
@@ -169,7 +169,7 @@ Write the summary in the message text, not only in the tool description.
 
 <!-- kit:private-data -->
 This repository is public, or it can become public. Git history is permanent
-([ADR-0001](decisions/entries/0001-decision-log-agents-md-and-private-data.md)).
+({{RULES_ENTRY_LINK}}).
 Do not write these in a tracked file, a commit message or a PR body:
 
 - a credential, a token, a password or a private key;

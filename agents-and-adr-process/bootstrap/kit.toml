@@ -18,6 +18,7 @@ PYTHON_VERSION = "3.13.18"  # The Python of the doc checks in CI. At least 3.13.
 SELF_TEST = "the self-test of the project"  # The self-test, as AGENTS.md and the skills name it, for example "package.certify".
 CERTIFY_SPEC = "specs/certify.md"  # The spec that holds the certify check names.
 CERTIFY_REPO = "certify"  # The repository of the certify contract report-format.md.
+RULES_ENTRY_LINK = "[ADR-0001](decisions/entries/0001-decision-log-agents-md-and-private-data.md)"  # The link from AGENTS.md to the entry of this repository that gives the rules of the log, of plans/ and of private data.
 
 [check_decision_log]
 # module_logs = ["server/decisions"]  # The folder of each module log.
@@ -34,6 +35,7 @@ CERTIFY_REPO = "certify"  # The repository of the certify contract report-format
 # line = 1
 # sha256 = "<64 hex characters>"
 # reason = "upstream author credit"
+# allowed_term_urls = ["https://models.example.org/project-models/"]  # Reviewed public addresses that the term check skips.
 
 [check_links]
 # doc_paths = ["specs/", "notes/"]  # The docs that the link check covers: a folder ends with /, else a file.

@@ -30,6 +30,7 @@ VALUES = {
     "SELF_TEST": "example.certify",
     "CERTIFY_SPEC": "docs/certify-checks.md",
     "CERTIFY_REPO": "example-certify",
+    "RULES_ENTRY_LINK": "[ADR-0030](decisions/entries/0030-private-data.md)",
 }
 # Repositories that use the kit but are not in repos.toml.
 OTHER_REPOS = ("skellycertify", "skellyfileformat", "skellyspecs", "OpenMMLab-Exporter")

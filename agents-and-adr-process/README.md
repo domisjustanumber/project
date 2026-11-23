@@ -485,7 +485,10 @@ back to the kit. `tools/kit_sync.py` does both. The kit tools read the values of
 - Step 2 copies the other kit files one time: `CLAUDE.md`, `decisions/open-work.md`, the entry
   0001 and the module templates. Then they are repo text. A repo can delete `CLAUDE.md`, or not
   track it.
-- The kit text cites no entry of a repo, only the kit entry 0001. `propose` refuses a new citation.
+- The kit text cites no entry of a repo, only the kit entry 0001, as `(decision 0001)` in a tool.
+  `propose` refuses a new citation. The link from `AGENTS.md` to the entry that gives the rules of
+  the log, of `plans/` and of private data is the placeholder `{{RULES_ENTRY_LINK}}`, so each repo
+  links its own entry.
   A repo cites its own entry for a kit rule in repo text, after the block.
 
 A value of a repo in a unit is a placeholder `{{NAME}}` in the kit. `[values]` of `kit.toml` gives
