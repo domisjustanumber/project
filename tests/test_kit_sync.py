@@ -290,6 +290,21 @@ class KitSyncTests(unittest.TestCase):
         self.assertIn("AGENTS.md#other-systems", ks.load_config(self.repo)["kit"]["hashes"])
         self.assertEqual(self.check_errors(), [])
 
+    def test_a_pull_that_changes_kit_sync_runs_the_new_tool_once_more(self):
+        self.append(self.kit_file("bootstrap/tools/kit_sync.py"), "# A new version of the tool.\n")
+        self.commit_kit("new tool")
+        run = subprocess.run(
+            [sys.executable, str(self.repo / "tools" / "kit_sync.py"), "pull", "--kit", str(self.kit)],
+            cwd=self.repo,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(run.returncode, 0, run.stdout + run.stderr)
+        self.assertEqual(run.stdout.count("the new tool runs the pull once more"), 1, run.stdout)
+        self.assertIn("# A new version of the tool.", (self.repo / "tools" / "kit_sync.py").read_text(encoding="utf-8"))
+        self.assertEqual(self.check_errors(), [])
+
     def test_check_finds_a_value_that_pull_did_not_fill_in(self):
         self.edit("kit.toml", f'AREAS = "{VALUES["AREAS"]}"', 'AREAS = "the code"')
         self.assertEqual([e.split(":")[0] for e in self.check_errors()], ["kit"])
@@ -355,6 +370,14 @@ class KitManifestTests(unittest.TestCase):
         self.assertEqual(unfill.text(kit, local, "u")[0], "Read [the spec](../../../" + placeholder("SPEC") + ") first.")
         with self.assertRaises(ks.KitError):
             unfill.text("", "See ../specs/certify.md.", "u")
+
+    def test_a_name_value_in_a_url_is_found(self):
+        unfill = ks.Unfill({"REPO": "skellycertify"})
+        kit = "See https://github.com/o/" + placeholder("REPO") + "/blob/main/x.md."
+        local = "See https://github.com/o/skellycertify/blob/main/x.md first."
+        self.assertEqual(unfill.text(kit, local, "u")[0], "See https://github.com/o/" + placeholder("REPO") + "/blob/main/x.md first.")
+        with self.assertRaisesRegex(ks.KitError, "REPO"):
+            unfill.text("", "A new line: https://github.com/o/skellycertify/blob/main/y.md", "u")
 
     def test_each_marker_block_of_a_kit_file_is_in_the_manifest(self):
         listed = {u.id for u in self.units}

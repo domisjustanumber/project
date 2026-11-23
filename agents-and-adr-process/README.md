@@ -118,9 +118,10 @@ It fills in the placeholders of the kit blocks and the kit files, and it writes 
 
 Each repo uses LF line ends on each system. After the block of `.gitattributes` is in the repo,
 run `git add --renormalize .` one time, and commit the result by itself. In a repo whose index
-holds only LF, the commit has no change. Then each person makes the working tree again. In a
-worktree with no local change, `git rm -r --cached -q .` and then `git reset --hard` do this. Do
-not run them in a worktree with a local change: `git reset --hard` deletes it.
+holds only LF, the commit has no change. A worktree that git wrote before the rule keeps its CRLF
+files. In each such worktree, run `uv run python tools/check_line_ends.py --refresh`. It writes
+each CRLF file again with LF. It refuses when a tracked file has a change, so it cannot delete
+work. Do not use `git reset --hard` for this.
 
 Replace each other placeholder with the answer of the user or with project facts. When such a
 placeholder is a rule that does not apply, delete the full line. Then run:
