@@ -8,9 +8,6 @@ result.
   (user, 2026-11-23: "everything gets merged into dom/agents-and-adr-kit for now"). The branch
   of freemocap/project that `dom/agents-and-adr-kit` merges to is not chosen
   ([ADR-B1QZ](entries/B1QZ-two-way-kit-sync.md)).
-- **Who proposes the other-systems rule.** skellycam has the rule "other systems only through
-  certify" in kit form. The user did not decide who runs `propose` into the kit after the review
-  of the skellycam pilot ([ADR-B1QZ](entries/B1QZ-two-way-kit-sync.md)).
 - **The adoption of the other repos.** skellycam is the pilot. skellytracker removes
   `tools/sync_bootstrap_kit.py` and takes `kit_sync.py`. skellyspecs, freemocap and skellycertify
   take the kit when they choose. Then the section "Keep the kit current" of the kit README goes

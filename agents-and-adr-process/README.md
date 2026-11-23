@@ -22,9 +22,9 @@ its own log, [`decisions/`](decisions/README.md).
 | [`decisions/open-work.md`](bootstrap/decisions/open-work.md) | the same path | Replace the example item, or delete it |
 | [`decisions/entries/0001-…`](bootstrap/decisions/entries/0001-decision-log-agents-md-and-private-data.md) | the same path | Fill in the date |
 | [`kit.toml`](bootstrap/kit.toml) | `kit.toml` | Fill in `[values]` and the tables of the tools, for example the public contact address of the project in `allowed_emails` and the folders of the golden reference files in `golden_paths` |
-| `tools/check_decision_log.py`, `tools/check_links.py`, `tools/check_private_data.py`, `tools/check_ai_attribution.py`, `tools/check_camera_media.py`, `tools/check_line_ends.py`, `tools/kit_sync.py`, `tools/kit_config.py` | the same paths | Copy. The tools read the values of the repo from `kit.toml` with `kit_config.py`. |
-| `tools/tests/conftest.py` and the seven `test_*.py` files | the same paths | Copy |
-| [`.claude/skills/commit-files/SKILL.md`](bootstrap/.claude/skills/commit-files/SKILL.md), [`.claude/skills/change-decision-log/SKILL.md`](bootstrap/.claude/skills/change-decision-log/SKILL.md) | the same paths | Copy |
+| `tools/check_decision_log.py`, `tools/check_links.py`, `tools/check_private_data.py`, `tools/check_ai_attribution.py`, `tools/check_camera_media.py`, `tools/check_line_ends.py`, `tools/check_other_systems.py`, `tools/kit_sync.py`, `tools/kit_config.py` | the same paths | Copy. The tools read the values of the repo from `kit.toml` with `kit_config.py`. |
+| `tools/tests/conftest.py` and the eight `test_*.py` files | the same paths | Copy |
+| [`.claude/skills/commit-files/SKILL.md`](bootstrap/.claude/skills/commit-files/SKILL.md), [`.claude/skills/change-decision-log/SKILL.md`](bootstrap/.claude/skills/change-decision-log/SKILL.md), [`.claude/skills/verify-on-other-systems/SKILL.md`](bootstrap/.claude/skills/verify-on-other-systems/SKILL.md) | the same paths | Copy. The first `pull` fills in their placeholders from `kit.toml`. |
 | `.pre-commit-config.yaml`, `.gitleaks.toml`, `.gitattributes` | the same paths | Copy. If the repo has a `.gitattributes`, put the kit block first in it. |
 | `.github/workflows/secrets.yml`, `.github/workflows/doc-checks.yml` | the same paths | Copy. The first `pull` fills in their placeholders from `kit.toml`. |
 | [`gitignore-additions.txt`](bootstrap/gitignore-additions.txt) | `.gitignore` | Append the lines, also the marker lines. Do not copy the file as `.gitignore`. |
@@ -174,6 +174,7 @@ uv run python tools/check_private_data.py
 uv run python tools/check_camera_media.py --all
 uv run python tools/kit_sync.py check
 uv run python tools/check_line_ends.py
+uv run python tools/check_other_systems.py --all
 uv run pre-commit install
 uv run pre-commit run --all-files
 uv run pre-commit run --hook-stage pre-push --all-files

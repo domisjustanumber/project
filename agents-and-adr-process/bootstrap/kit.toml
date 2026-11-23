@@ -15,6 +15,9 @@ NORMATIVE_DOCS = "none"  # The binding documents, for example "the specs in `spe
 SIBLING_PATH = "../other-repo/notes/"  # A path relative to the repository, as an example in AGENTS.md.
 SECRET_SCAN_BRANCHES = "[main]"  # The branches of a PR that the secret scan checks.
 PYTHON_VERSION = "3.13.18"  # The Python of the doc checks in CI. At least 3.13.
+SELF_TEST = "the self-test of the project"  # The self-test, as AGENTS.md and the skills name it, for example "package.certify".
+CERTIFY_SPEC = "specs/certify.md"  # The spec that holds the certify check names.
+CERTIFY_REPO = "certify"  # The repository of the certify contract report-format.md.
 
 [check_decision_log]
 # module_logs = ["server/decisions"]  # The folder of each module log.
@@ -38,3 +41,9 @@ PYTHON_VERSION = "3.13.18"  # The Python of the doc checks in CI. At least 3.13.
 
 [check_camera_media]
 # golden_paths = ["golden/"]  # The path prefixes of the golden reference files. Default: none.
+
+[check_other_systems]
+# exempt_paths = [".github/"]  # The product folders and the CI workflows. They can name systems.
+# certify_spec = "specs/certify.md"  # The spec that holds the check names.
+# self_test = "the self-test of the project"  # The self-test, in the advice of a refusal line.
+# certify_contract = "the certify contract"  # In the refusal line for a new check.

@@ -27,6 +27,9 @@ VALUES = {
     "SIBLING_PATH": "../skellyfileformat/spec/",
     "SECRET_SCAN_BRANCHES": "[main, development]",
     "PYTHON_VERSION": "3.13.18",
+    "SELF_TEST": "example.certify",
+    "CERTIFY_SPEC": "docs/certify-checks.md",
+    "CERTIFY_REPO": "example-certify",
 }
 # Repositories that use the kit but are not in repos.toml.
 OTHER_REPOS = ("skellycertify", "skellyfileformat", "skellyspecs", "OpenMMLab-Exporter")
@@ -269,25 +272,25 @@ class KitSyncTests(unittest.TestCase):
         self.edit(
             "AGENTS.md",
             "Do not change code that your task does not need.\n",
-            "Do not change code that your task does not need.\n\n<!-- kit:other-systems -->\nTest only here.\n<!-- /kit -->\n",
+            "Do not change code that your task does not need.\n\n<!-- kit:example-rule -->\nTest only here.\n<!-- /kit -->\n",
         )
         (self.repo / "tools/check_new.py").write_text("print('new')\n", encoding="utf-8")
         with self.assertRaisesRegex(ks.KitError, "add its two marker lines first"):
-            self.propose(new=["AGENTS.md#other-systems"])
+            self.propose(new=["AGENTS.md#example-rule"])
         self.edit(
             self.kit_file("bootstrap/AGENTS.md"),
             "Do not change code that your task does not need.\n",
-            "Do not change code that your task does not need.\n\n<!-- kit:other-systems -->\n<!-- /kit -->\n",
+            "Do not change code that your task does not need.\n\n<!-- kit:example-rule -->\n<!-- /kit -->\n",
         )
-        self.propose(new=["AGENTS.md#other-systems", "tools/check_new.py"])
+        self.propose(new=["AGENTS.md#example-rule", "tools/check_new.py"])
         manifest = ks.parse_manifest(self.kit_file("manifest.toml").read_text(encoding="utf-8"), "m")
-        self.assertIn("AGENTS.md#other-systems", [u.id for u in manifest])
+        self.assertIn("AGENTS.md#example-rule", [u.id for u in manifest])
         self.assertIn("tools/check_new.py", [u.id for u in manifest])
-        self.assertIn("<!-- kit:other-systems -->\nTest only here.\n<!-- /kit -->", self.kit_file("bootstrap/AGENTS.md").read_text(encoding="utf-8"))
+        self.assertIn("<!-- kit:example-rule -->\nTest only here.\n<!-- /kit -->", self.kit_file("bootstrap/AGENTS.md").read_text(encoding="utf-8"))
         self.assertEqual(self.kit_file("bootstrap/tools/check_new.py").read_text(encoding="utf-8"), "print('new')\n")
         self.commit_kit("new units")
         self.pull()
-        self.assertIn("AGENTS.md#other-systems", ks.load_config(self.repo)["kit"]["hashes"])
+        self.assertIn("AGENTS.md#example-rule", ks.load_config(self.repo)["kit"]["hashes"])
         self.assertEqual(self.check_errors(), [])
 
     def test_a_pull_that_changes_kit_sync_runs_the_new_tool_once_more(self):

@@ -17,7 +17,7 @@ Keep technical names, field names, values, formulas, code and YAML unchanged.
 | `AGENTS.md` | The root instructions file for coding agents |
 | `CLAUDE.md` | Imports this file. It has no other content. |
 | `decisions/` | Decision log ([`README.md`](decisions/README.md)) and its open work ([`open-work.md`](decisions/open-work.md)) |
-| `tools/` | The doc checks: `check_decision_log.py`, `check_links.py`, `check_private_data.py`, `check_camera_media.py` and `check_line_ends.py`, and the kit sync `kit_sync.py`. Their tests are in `tools/tests/`. |
+| `tools/` | The doc checks: `check_decision_log.py`, `check_links.py`, `check_private_data.py`, `check_camera_media.py`, `check_line_ends.py` and `check_other_systems.py`, and the kit sync `kit_sync.py`. Their tests are in `tools/tests/`. |
 | `kit.toml` | The values of this repository for the tools, and the kit commit that it took ([section 4](#4-project-rules)) |
 | `plans/` | A local working folder. Git ignores it. |
 | `{{MODULE}}/` | {{MODULE_ROLE}}. Its `AGENTS.md` holds the rules for the work in it. Its log is in `{{MODULE}}/decisions/`. |
@@ -79,6 +79,22 @@ Each text file uses LF line ends, on each system. The kit block of `.gitattribut
 write LF, also when `core.autocrlf` is set. Do not change that block.
 `tools/check_line_ends.py` fails a commit and CI when the index holds a CRLF line end.
 To repair the index, run `git add --renormalize .` and commit the result by itself.
+<!-- /kit -->
+
+### Other systems only through certify
+
+<!-- kit:other-systems -->
+You can test only on the system that you work on. You can reach each other system only through the
+self-test of the project and its report. Another system is another OS, or hardware that the system
+that you work on does not have.
+When you cannot verify a fact on the system that you work on, do not write a script or a manual
+step for a person to run on another system. Add a check to the self-test.
+Sections 5.5 and 5.6 of `report-format.md` of the {{CERTIFY_REPO}} repository tell how to add a check,
+when a check can exist, and its level.
+Mark the fact "not verified" until a report gives its result.
+The one exception is a CI runner with no camera. It can still run the checks that need no device.
+Load the skill [`verify-on-other-systems`](.claude/skills/verify-on-other-systems/SKILL.md) for
+this work.
 <!-- /kit -->
 
 ## 5. Decision Log

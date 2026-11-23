@@ -138,3 +138,16 @@ name = "line-ends"
 path = ".gitignore"
 name = "ignores"
 kit = "bootstrap/gitignore-additions.txt"
+
+[[block]]
+path = "AGENTS.md"
+name = "other-systems"
+
+[[file]]
+path = "tools/check_other_systems.py"
+
+[[file]]
+path = "tools/tests/test_other_systems.py"
+
+[[file]]
+path = ".claude/skills/verify-on-other-systems/SKILL.md"
