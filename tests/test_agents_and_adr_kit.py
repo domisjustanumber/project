@@ -28,6 +28,15 @@ class KitTests(unittest.TestCase):
         cdl = load(KIT_ROOT / "tools" / "check_decision_log.py", "kit_check_decision_log")
         self.assertEqual(cdl.check(KIT_ROOT), [])
 
+    def test_the_log_of_the_kit_itself_passes_the_kit_checks(self):
+        """agents-and-adr-process/decisions/ holds the decisions of the kit (ADR-KAX0 of that log)."""
+        cdl = load(KIT_ROOT / "tools" / "check_decision_log.py", "kit_check_decision_log_own")
+        links = load(KIT_ROOT / "tools" / "check_links.py", "kit_check_links_own")
+        self.assertEqual(cdl.check(KIT_ROOT.parent), [])
+        files = sorted((KIT_ROOT.parent / "decisions").rglob("*.md"))
+        self.assertTrue(files)
+        self.assertEqual([e for f in files for e in links.check_file(f, KIT_ROOT.parents[1])], [])
+
     def test_kit_with_two_module_logs_passes_the_kit_checks(self):
         """A repo made from the kit with the filled-in module template in server/ and ui/ passes."""
         with tempfile.TemporaryDirectory() as folder:

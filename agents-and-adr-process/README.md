@@ -8,7 +8,8 @@ each file goes to the same relative path.
 The rules come from the skellytracker decision log: skellytracker ADR-2XW6 and the entries that it
 restates. The kit has their final form. It does not have their history. A repo that uses the kit
 takes the changes of the kit, and it gives its own changes back, with `tools/kit_sync.py`
-([Sync a repo with the kit](#sync-a-repo-with-the-kit)).
+([Sync a repo with the kit](#sync-a-repo-with-the-kit)). The decisions about the kit itself are in
+its own log, [`decisions/`](decisions/README.md).
 
 ## What the kit gives
 
