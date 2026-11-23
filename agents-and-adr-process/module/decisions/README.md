@@ -15,14 +15,6 @@ These entries are `accepted`.
 | # | Decision | Status |
 |---|----------|--------|
 
-### Evidence
-
-These entries are `evidence`: measurements. They are not in the read path. Scan these rows before
-you make a measurement.
-
-| # | Decision | Status |
-|---|----------|--------|
-
 ### Proposed
 
 These entries wait for a decision of the user. Section is the section or area of the change, or
@@ -32,7 +24,8 @@ These entries wait for a decision of the user. Section is the section or area of
 |---|----------|---------|--------|
 
 The entries that are `rejected`, `superseded by XXXX`, `absorbed into <path>#<anchor>`,
-`evidence; used by XXXX` or `done` are in [historical.md](historical.md).
+`evidence; used by XXXX`, `evidence; replaced by XXXX` or `done` are in [historical.md](historical.md).
+The entries that are `evidence` are in [evidence.md](evidence.md).
 
 ## Open work
 

@@ -15,12 +15,12 @@ restates. The kit has their final form. It does not have their history.
 | [`AGENTS.md`](bootstrap/AGENTS.md) | `AGENTS.md` | Fill in each `{{...}}` |
 | [`CLAUDE.md`](bootstrap/CLAUDE.md) | `CLAUDE.md` | Copy. Its only content is `@AGENTS.md`. |
 | [`decisions/README.md`](bootstrap/decisions/README.md) | the same path | Fill in each `{{...}}` |
-| [`decisions/historical.md`](bootstrap/decisions/historical.md), [`decisions/template.md`](bootstrap/decisions/template.md) | the same paths | Copy |
+| [`decisions/evidence.md`](bootstrap/decisions/evidence.md), [`decisions/historical.md`](bootstrap/decisions/historical.md), [`decisions/template.md`](bootstrap/decisions/template.md) | the same paths | Copy |
 | [`decisions/open-work.md`](bootstrap/decisions/open-work.md) | the same path | Replace the example item, or delete it |
 | [`decisions/entries/0001-…`](bootstrap/decisions/entries/0001-decision-log-agents-md-and-private-data.md) | the same path | Fill in the date |
 | `tools/check_decision_log.py`, `tools/check_links.py`, `tools/check_private_data.py`, `tools/check_ai_attribution.py`, `tools/check_camera_media.py` | the same paths | Copy. Add the public contact address of the project to `ALLOWED_EMAILS`. Set `GOLDEN_PATHS` in `check_camera_media.py` to the folders of the golden reference files, or to `()`. |
 | `tools/tests/conftest.py` and the five `test_*.py` files | the same paths | Copy |
-| [`.claude/skills/commit-files/SKILL.md`](bootstrap/.claude/skills/commit-files/SKILL.md) | the same path | Copy |
+| [`.claude/skills/commit-files/SKILL.md`](bootstrap/.claude/skills/commit-files/SKILL.md), [`.claude/skills/change-decision-log/SKILL.md`](bootstrap/.claude/skills/change-decision-log/SKILL.md) | the same paths | Copy |
 | `.pre-commit-config.yaml`, `.gitleaks.toml` | the same paths | Copy |
 | `.github/workflows/secrets.yml`, `.github/workflows/doc-checks.yml` | the same paths | Copy. In `secrets.yml`, change `branches: [main]` if PRs target a different branch. |
 | [`gitignore-additions.txt`](bootstrap/gitignore-additions.txt) | `.gitignore` | Append the lines. Do not copy the file as `.gitignore`. |
@@ -208,18 +208,19 @@ Put the kit in one commit, in one docs PR. Do not push without the approval of t
 
 ### Status and tables
 
-The index (`README.md`) has the Active, Evidence and Proposed tables. `historical.md` has the
-Historical table, and `template.md` has the entry template. An agent reads the index, `open-work.md`
+The index (`README.md`) has the Active and Proposed tables. `evidence.md` has the Evidence table,
+`historical.md` has the Historical table, and `template.md` has the entry template. An agent reads the index, `open-work.md`
 and the Active entries that apply to its task. These files are the read path. It scans the rows of
-the Evidence table before it makes a measurement. It reads a Proposed entry only for work in its
+`evidence.md` before it makes a measurement. It loads the skill `change-decision-log` before it
+changes a log. It reads a Proposed entry only for work in its
 section, and a Historical entry only to find the reason for a decision.
 
 | Table | File | Status forms |
 |---|---|---|
 | Active | `README.md` | `accepted` |
-| Evidence | `README.md` | `evidence`. The entries are not in the read path. |
+| Evidence | `evidence.md` | `evidence`. The file and its entries are not in the read path. |
 | Proposed | `README.md` | `proposed`. The row also has a Section cell: an ID in backticks, or `none`. |
-| Historical | `historical.md` | `evidence; used by XXXX`, `rejected`, `superseded by XXXX`, `absorbed into <path>#<anchor>`, `done` |
+| Historical | `historical.md` | `evidence; used by XXXX`, `evidence; replaced by XXXX`, `rejected`, `superseded by XXXX`, `absorbed into <path>#<anchor>`, `done` |
 
 `done` is for an accepted entry that records a one-off action, with no rule that stays.
 

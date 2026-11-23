@@ -33,6 +33,7 @@ The rules in this file also apply.
 | Skill | Use it to |
 |---|---|
 | [`commit-files`](.claude/skills/commit-files/SKILL.md) | Make a commit, or add a recording, a camera frame, an image or another large file |
+| [`change-decision-log`](.claude/skills/change-decision-log/SKILL.md) | Add a decision entry, change a status, absorb or supersede an entry, or move a row of a log |
 | {{SKILL_NAME}} | {{WHEN_TO_USE_IT}} |
 
 ## 3. Install and Test
@@ -69,8 +70,9 @@ changes is in that module.
 All other entries go in the root log, also each case that you cannot decide.
 A new module log needs the approval of the user. The PR that adds it also adds its folder to
 `LOG_DIRS` of `tools/check_decision_log.py`.
-Each log has a `README.md` with an Active table, an Evidence table, a Proposed table and `## Open work`, a
-`historical.md`, an `open-work.md` and its entry files in `entries/`. The Rules and `template.md` are only in the root log.
+Each log has a `README.md` with an Active table, a Proposed table and `## Open work`, an
+`evidence.md` with the Evidence table, a `historical.md`, an `open-work.md` and its entry files in
+`entries/`. The Rules and `template.md` are only in the root log.
 All logs have one ID space. Do not add a module name to an ID.
 When the scope of a module entry grows to more than one module, a new root entry supersedes it.
 A tool is code that a test, a hook, a CI job, a skill or a workflow step runs, or code that writes a
@@ -79,8 +81,10 @@ A script made the evidence for an entry or did its one-off job, and the entry na
 `scripts/` of the log that holds the entry. Its own tests, if any, are in `scripts/tests/`.
 A script does not change after its entry is decided. When a step starts to run it, move it to
 `tools/` and add a test.
-The [Rules](decisions/README.md#rules) of the index give the allowed edits, the status changes and
-the other rules that an agent needs and that no tool checks and no loaded document states. `tools/check_decision_log.py` checks the tables, the IDs and the
+The [Rules](decisions/README.md#rules) of the index give the rules for reading a log.
+Before you add or change an entry, a status or a row of a table, load the skill
+[`change-decision-log`](.claude/skills/change-decision-log/SKILL.md). It gives the allowed edits, the status changes and
+the other rules for a change that no tool checks. `tools/check_decision_log.py` checks the tables, the IDs and the
 limits.
 Add one entry for each new decision or measurement.
 Get its ID from `uv run python tools/check_decision_log.py --new`.
@@ -92,7 +96,7 @@ user. In a reply or a plan, the path is relative to the repository root or to th
 A commit message cannot hold a working link. In the commit body, write `ADR-<ID>` with no link.
 Cite an entry of another repository with the repository name and `ADR-<ID>`. Also link it with a
 full-SHA permalink when the entry is on the default branch of that repository
-(see the [Rules](decisions/README.md#rules)).
+(see the [Rules](.claude/skills/change-decision-log/SKILL.md#rules)).
 
 ## 6. Git Rules
 
