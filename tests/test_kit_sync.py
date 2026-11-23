@@ -177,6 +177,18 @@ class KitSyncTests(unittest.TestCase):
         self.assertIn("# A new line.", (self.repo / "tools/check_links.py").read_text(encoding="utf-8"))
         self.assertEqual(self.check_errors(), [])
 
+    def test_a_new_kit_block_fills_the_two_marker_lines_that_the_repository_adds(self):
+        """The refusal for a missing block says: add the two marker lines. The next pull fills them."""
+        self.append(self.kit_file("bootstrap/AGENTS.md"), "\n<!-- kit:example-new -->\nA new kit rule.\n<!-- /kit -->\n")
+        self.append(self.kit_file("manifest.toml"), '\n[[block]]\npath = "AGENTS.md"\nname = "example-new"\n')
+        self.commit_kit("a new block")
+        with self.assertRaisesRegex(ks.KitError, "add the two marker lines"):
+            self.pull()
+        self.append(self.repo / "AGENTS.md", "\n<!-- kit:example-new -->\n<!-- /kit -->\n")
+        self.pull()
+        self.assertIn("<!-- kit:example-new -->\nA new kit rule.\n<!-- /kit -->", (self.repo / "AGENTS.md").read_text(encoding="utf-8"))
+        self.assertEqual(self.check_errors(), [])
+
     def test_a_local_change_fails_check_until_propose_and_the_kit_takes_it(self):
         old = f"before you change {VALUES['AREAS']} or these instructions."
         self.edit("AGENTS.md", old, f"before you change {VALUES['AREAS']}, the docs or these instructions.")
